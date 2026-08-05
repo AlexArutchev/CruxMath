@@ -39,8 +39,16 @@ let signingIn: Promise<string | null> | null = null;
 export async function ensureDeviceUser(): Promise<string | null> {
   const sb = supabaseBrowser();
 
+  // getSession only reads localStorage, so it happily returns a token for a user
+  // that no longer exists server side. getUser validates against the server, which
+  // is what lets a device recover instead of failing every write with a dead JWT.
   const { data: existing } = await sb.auth.getSession();
-  if (existing.session?.user?.id) return existing.session.user.id;
+  if (existing.session?.user?.id) {
+    const { data: verified } = await sb.auth.getUser();
+    if (verified.user?.id) return verified.user.id;
+    // Stale token: drop it and mint a fresh anonymous identity below.
+    await sb.auth.signOut().catch(() => {});
+  }
 
   if (!signingIn) {
     signingIn = sb.auth

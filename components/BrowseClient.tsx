@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
+import { activeMedal, type Medal } from "@/lib/medal";
 import type { Problem } from "@/lib/types";
 
 const PAGE_SIZE = 30;
@@ -54,7 +55,7 @@ export default function BrowseClient({
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
+  const [medals, setMedals] = useState<Map<string, Medal>>(new Map());
 
   // Debounce typing so each keystroke does not fire a query.
   const [debouncedQ, setDebouncedQ] = useState("");
@@ -124,11 +125,17 @@ export default function BrowseClient({
       if (!id || cancelled) return;
       const { data } = await supabaseBrowser()
         .from("user_progress")
-        .select("problem_id")
+        .select("problem_id, medal, medal_at")
         .eq("user_id", id)
-        .eq("solved", true);
+        .not("medal", "is", null);
       if (cancelled || !data) return;
-      setSolvedIds(new Set(data.map((r: { problem_id: string }) => r.problem_id)));
+      const now = Date.now();
+      const next = new Map<string, Medal>();
+      for (const r of data as { problem_id: string; medal: Medal; medal_at: string }[]) {
+        const m = activeMedal(r.medal, r.medal_at, now);
+        if (m) next.set(r.problem_id, m);
+      }
+      setMedals(next);
     })();
     return () => {
       cancelled = true;
@@ -269,11 +276,20 @@ export default function BrowseClient({
 
         <div>
           {rows.map((p) => (
-            <Link className="row" key={p.id} href={"/problem/" + p.id}>
+            <Link
+              className={"row" + (medals.get(p.id) ? " medal-" + medals.get(p.id) : "")}
+              key={p.id}
+              href={"/problem/" + p.id}
+            >
               <span className="r-c">
                 {p.has_ladder && <span className="r-ladder" title="Hint ladder available" />}
                 {p.contest.toUpperCase()} · {p.num}
-                {solvedIds.has(p.id) && <span className="r-solved" title="Solved" />}
+                {medals.get(p.id) && (
+                  <span
+                    className={"r-medal " + medals.get(p.id)}
+                    title={"Solved: " + medals.get(p.id)}
+                  />
+                )}
               </span>
               <span
                 className="r-tex"

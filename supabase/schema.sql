@@ -135,3 +135,21 @@ create policy "own progress delete"
 insert into storage.buckets (id, name, public)
 values ('figures', 'figures', true)
 on conflict (id) do update set public = true;
+
+-- ---------------------------------------------------------------------------
+-- MEDALS
+-- The medal records HOW a problem was solved (hints spent at the moment of the
+-- solve) and is kept separate from the live hint counter, so "reset and try
+-- again" can clear the attempt without erasing what was already earned. A medal
+-- Gold is kept permanently; silver and bronze lapse after MEDAL_TTL_DAYS, which
+-- is why the timestamp is stored rather than a boolean.
+-- ---------------------------------------------------------------------------
+
+alter table public.user_progress
+  add column if not exists medal text
+    check (medal in ('gold', 'silver', 'bronze')),
+  add column if not exists medal_at timestamptz;
+
+create index if not exists user_progress_medal_idx
+  on public.user_progress (user_id, medal_at)
+  where medal is not null;

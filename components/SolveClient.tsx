@@ -7,6 +7,14 @@ import AopsButton from "./AopsButton";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { isChoiceAnswer, isCorrect, answerLabel } from "@/lib/answer";
 import { aopsUrl } from "@/lib/aops";
+import {
+  medalForHints,
+  bestMedal,
+  activeMedal,
+  daysLeft,
+  medalLapses,
+  type Medal,
+} from "@/lib/medal";
 import type { Problem, Ladder } from "@/lib/types";
 
 type Saved = {
@@ -14,6 +22,8 @@ type Saved = {
   hints_revealed: number;
   attempts: number;
   aops_viewed: boolean;
+  medal: Medal | null;
+  medal_at: string | null;
 };
 
 export default function SolveClient({
@@ -32,6 +42,8 @@ export default function SolveClient({
   const [attempts, setAttempts] = useState(0);
   const [aopsViewed, setAopsViewed] = useState(false);
   const [hintsAtSolve, setHintsAtSolve] = useState(0);
+  const [medal, setMedal] = useState<Medal | null>(null);
+  const [medalAt, setMedalAt] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [choice, setChoice] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
@@ -51,7 +63,7 @@ export default function SolveClient({
       if (id) {
         const { data } = await supabaseBrowser()
           .from("user_progress")
-          .select("solved, hints_revealed, attempts, aops_viewed")
+          .select("solved, hints_revealed, attempts, aops_viewed, medal, medal_at")
           .eq("user_id", id)
           .eq("problem_id", problem.id)
           .maybeSingle();
@@ -62,6 +74,8 @@ export default function SolveClient({
           setHintsAtSolve(p.hints_revealed);
           setAttempts(p.attempts);
           setAopsViewed(p.aops_viewed);
+          setMedal(p.medal ?? null);
+          setMedalAt(p.medal_at ?? null);
           if (p.solved) {
             setVerdict({ ok: true, text: "Solved. The answer is " + problem.answer + "." });
           }
@@ -75,7 +89,7 @@ export default function SolveClient({
   }, [problem.id, problem.answer, M]);
 
   const save = useCallback(
-    async (patch: Partial<Saved> & { solved_at?: string }) => {
+    async (patch: Partial<Saved> & { solved_at?: string | null }) => {
       const id = userId.current;
       if (!id) return; // anonymous sign-in unavailable; page still works, just unsaved
       await supabaseBrowser()
@@ -101,14 +115,24 @@ export default function SolveClient({
     setAttempts(nextAttempts);
 
     if (isCorrect(given, problem.answer)) {
+      // Hints spent on THIS attempt decide the medal. A previously earned medal
+      // is never demoted by a hintier re-solve, and any solve restarts the clock.
+      const justEarned = medalForHints(revealed);
+      const keep = bestMedal(activeMedal(medal, medalAt), justEarned) ?? justEarned;
+      const now = new Date().toISOString();
+
       setSolved(true);
       setHintsAtSolve(revealed);
+      setMedal(keep);
+      setMedalAt(now);
       setVerdict({ ok: true, text: "Correct. The answer is " + problem.answer + "." });
       void save({
         solved: true,
         attempts: nextAttempts,
         hints_revealed: revealed,
-        solved_at: new Date().toISOString(),
+        solved_at: now,
+        medal: keep,
+        medal_at: now,
       });
     } else {
       setVerdict({ ok: false, text: "Not yet. The ladder is there when you want it." });
@@ -122,8 +146,27 @@ export default function SolveClient({
     void save({ aops_viewed: true });
   }
 
+  /**
+   * Re-lock the hints and clear the solve so the problem can be attempted cold.
+   * The medal and its timestamp are deliberately left alone: what you already
+   * earned stays in the library until it lapses on its own.
+   */
+  function resetAttempt() {
+    setRevealed(0);
+    setPending(0);
+    setSolved(false);
+    setHintsAtSolve(0);
+    setChoice(null);
+    setInput("");
+    setVerdict(null);
+    void save({ solved: false, hints_revealed: 0, solved_at: null });
+  }
+
   const earned = !ladder || solved || revealed >= M;
   const reviewOpen = solved || (M > 0 && revealed >= M);
+  const shownMedal = activeMedal(medal, medalAt);
+  const canReset = revealed > 0 || solved;
+  const left = daysLeft(medalAt);
 
   const tagbits = [
     ...(problem.topics ?? []).map((t) => t.toUpperCase()),
@@ -142,8 +185,9 @@ export default function SolveClient({
           </span>
           <span className="mono m m-tags">{tagbits}</span>
           {solved && (
-            <span className="solved-pill">
-              SOLVED &middot; {hintsAtSolve} HINT{hintsAtSolve === 1 ? "" : "S"}
+            <span className={"solved-pill " + medalForHints(hintsAtSolve)}>
+              {medalForHints(hintsAtSolve).toUpperCase()} &middot; {hintsAtSolve} HINT
+              {hintsAtSolve === 1 ? "" : "S"}
             </span>
           )}
         </div>
@@ -152,7 +196,7 @@ export default function SolveClient({
 
         {problem.figure_img && (
           <figure>
-            {/* Official contest figure, served from the AoPS CDN. */}
+            {/* Official contest figure. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="figimg" src={problem.figure_img} alt="Official contest figure" />
             <div className="cap">Official figure, {problem.contest}.</div>
@@ -197,6 +241,7 @@ export default function SolveClient({
                 problem.answer && /^\d+$/.test(problem.answer) ? "numeric" : undefined
               }
               autoComplete="off"
+              disabled={solved}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") check();
@@ -204,13 +249,33 @@ export default function SolveClient({
             />
           )}
 
-          <button className="btn" onClick={check} disabled={!ready}>
+          <button className="btn" onClick={check} disabled={!ready || solved}>
             CHECK
           </button>
           {verdict && (
             <span className={"verdict " + (verdict.ok ? "ok" : "no")}>{verdict.text}</span>
           )}
         </div>
+
+        {canReset && (
+          <div className="reset-row">
+            <button className="reset-btn" onClick={resetAttempt}>
+              RESET AND TRY AGAIN
+            </button>
+            <span className="reset-note">
+              {!shownMedal
+                ? "Re-locks the hints so you can work the problem cold."
+                : !medalLapses(shownMedal)
+                ? "Re-locks the hints for a clean attempt. Your gold is permanent, so it stays in the library for good."
+                : "Re-locks the hints for a clean attempt. Your " +
+                  shownMedal +
+                  " stays in the library for " +
+                  left +
+                  (left === 1 ? " more day" : " more days") +
+                  ", and solving again with no hints earns a gold that never fades."}
+            </span>
+          </div>
+        )}
 
         <AopsButton url={url} hasLadder={!!ladder} earned={earned} onView={markAopsViewed} />
 
