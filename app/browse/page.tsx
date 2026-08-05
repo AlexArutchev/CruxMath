@@ -1,0 +1,44 @@
+import Header from "@/components/Header";
+import BrowseClient from "@/components/BrowseClient";
+import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
+
+export const metadata = { title: "Library" };
+
+// Facet lists change only when content is reseeded.
+export const revalidate = 3600;
+
+async function facets() {
+  // Build the filter rail if we can. Without config, still render the page so a
+  // fresh clone builds; the warning below says exactly what is missing.
+  if (!hasSupabaseEnv()) {
+    console.warn(
+      "[cruxmath] Supabase not configured, filter rail will be empty. See README."
+    );
+    return { contests: [], tiers: [], topics: [] };
+  }
+  const sb = supabaseServer();
+  // Small projection over the corpus: enough to build the filter rail without
+  // shipping statements to the client.
+  const { data, error } = await sb.from("problems").select("contest, tier, topics");
+  if (error) {
+    // An empty filter rail is a misconfiguration, not a legitimately empty
+    // corpus. Say so in the build/server log instead of rendering nothing.
+    console.error("[cruxmath] could not load filter facets:", error.message);
+  }
+  const rows = (data ?? []) as { contest: string; tier: string | null; topics: string[] }[];
+
+  const contests = Array.from(new Set(rows.map((r) => r.contest))).sort().reverse();
+  const tiers = Array.from(new Set(rows.map((r) => r.tier).filter(Boolean) as string[])).sort();
+  const topics = Array.from(new Set(rows.flatMap((r) => r.topics ?? []))).sort();
+  return { contests, tiers, topics };
+}
+
+export default async function BrowsePage() {
+  const { contests, tiers, topics } = await facets();
+  return (
+    <>
+      <Header active="library" />
+      <BrowseClient contests={contests} tiers={tiers} topics={topics} />
+    </>
+  );
+}
