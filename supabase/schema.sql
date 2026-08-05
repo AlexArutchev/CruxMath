@@ -148,7 +148,10 @@ on conflict (id) do update set public = true;
 alter table public.user_progress
   add column if not exists medal text
     check (medal in ('gold', 'silver', 'bronze')),
-  add column if not exists medal_at timestamptz;
+  add column if not exists medal_at timestamptz,
+  -- Wrong guesses since the last reset. Counted alongside hints when the medal
+  -- is decided, so a lucky guess costs the same as peeking at a rung.
+  add column if not exists wrong_attempts int not null default 0;
 
 create index if not exists user_progress_medal_idx
   on public.user_progress (user_id, medal_at)

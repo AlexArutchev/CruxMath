@@ -169,3 +169,8 @@ a.row{text-decoration:none;color:inherit}
 .reset-btn{font-weight:600;font-size:10px;letter-spacing:.12em;padding:9px 15px;background:none;border:1px solid #C9C2B4;border-radius:2px;color:var(--mut2);cursor:pointer;font-family:'IBM Plex Mono',monospace}
 .reset-btn:hover{border-color:var(--ox);color:var(--ox)}
 .reset-note{font-style:italic;font-size:12px;color:var(--mut);max-width:420px}
+
+/* Verdict sits below the answer row so it can never reflow the choices. */
+.verdict-row{margin-top:13px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;min-height:19px}
+.verdict-cost{font-weight:600;font-size:9.5px;letter-spacing:.12em;color:var(--mut)}
+.lock-note{margin-top:12px;font-style:italic;font-size:13px;line-height:1.55;color:var(--mut3);border-left:2px solid var(--gold-edge);padding-left:12px;max-width:560px}

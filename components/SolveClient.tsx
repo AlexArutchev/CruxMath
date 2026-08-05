@@ -8,8 +8,9 @@ import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { isChoiceAnswer, isCorrect, answerLabel } from "@/lib/answer";
 import { aopsUrl } from "@/lib/aops";
 import {
-  medalForHints,
-  bestMedal,
+  solveCost,
+  medalForCost,
+  medalAfterSolve,
   activeMedal,
   daysLeft,
   medalLapses,
@@ -21,10 +22,17 @@ type Saved = {
   solved: boolean;
   hints_revealed: number;
   attempts: number;
+  wrong_attempts: number;
   aops_viewed: boolean;
   medal: Medal | null;
   medal_at: string | null;
 };
+
+function costLabel(hints: number, wrong: number): string {
+  const bits = [hints + (hints === 1 ? " HINT" : " HINTS")];
+  if (wrong > 0) bits.push(wrong + " WRONG");
+  return bits.join(" · ");
+}
 
 export default function SolveClient({
   problem,
@@ -40,10 +48,12 @@ export default function SolveClient({
   const [pending, setPending] = useState(0);
   const [solved, setSolved] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [aopsViewed, setAopsViewed] = useState(false);
-  const [hintsAtSolve, setHintsAtSolve] = useState(0);
   const [medal, setMedal] = useState<Medal | null>(null);
   const [medalAt, setMedalAt] = useState<string | null>(null);
+  const [lastCost, setLastCost] = useState<number | null>(null);
+  const [wasLocked, setWasLocked] = useState(false);
   const [input, setInput] = useState("");
   const [choice, setChoice] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
@@ -63,7 +73,9 @@ export default function SolveClient({
       if (id) {
         const { data } = await supabaseBrowser()
           .from("user_progress")
-          .select("solved, hints_revealed, attempts, aops_viewed, medal, medal_at")
+          .select(
+            "solved, hints_revealed, attempts, wrong_attempts, aops_viewed, medal, medal_at"
+          )
           .eq("user_id", id)
           .eq("problem_id", problem.id)
           .maybeSingle();
@@ -71,12 +83,13 @@ export default function SolveClient({
           const p = data as Saved;
           setRevealed(Math.min(p.hints_revealed, M));
           setSolved(p.solved);
-          setHintsAtSolve(p.hints_revealed);
           setAttempts(p.attempts);
+          setWrongAttempts(p.wrong_attempts ?? 0);
           setAopsViewed(p.aops_viewed);
           setMedal(p.medal ?? null);
           setMedalAt(p.medal_at ?? null);
           if (p.solved) {
+            setLastCost(solveCost(p.hints_revealed, p.wrong_attempts ?? 0));
             setVerdict({ ok: true, text: "Solved. The answer is " + problem.answer + "." });
           }
         }
@@ -115,28 +128,34 @@ export default function SolveClient({
     setAttempts(nextAttempts);
 
     if (isCorrect(given, problem.answer)) {
-      // Hints spent on THIS attempt decide the medal. A previously earned medal
-      // is never demoted by a hintier re-solve, and any solve restarts the clock.
-      const justEarned = medalForHints(revealed);
-      const keep = bestMedal(activeMedal(medal, medalAt), justEarned) ?? justEarned;
+      // Hints and wrong guesses both count against the medal.
+      const cost = solveCost(revealed, wrongAttempts);
+      const outcome = medalAfterSolve(medal, medalAt, cost);
       const now = new Date().toISOString();
 
       setSolved(true);
-      setHintsAtSolve(revealed);
-      setMedal(keep);
-      setMedalAt(now);
+      setLastCost(cost);
+      setWasLocked(outcome.locked);
+      setMedal(outcome.medal);
+      setMedalAt(outcome.medalAt);
       setVerdict({ ok: true, text: "Correct. The answer is " + problem.answer + "." });
       void save({
         solved: true,
         attempts: nextAttempts,
         hints_revealed: revealed,
+        wrong_attempts: wrongAttempts,
         solved_at: now,
-        medal: keep,
-        medal_at: now,
+        medal: outcome.medal,
+        medal_at: outcome.medalAt,
       });
     } else {
-      setVerdict({ ok: false, text: "Not yet. The ladder is there when you want it." });
-      void save({ attempts: nextAttempts });
+      const nextWrong = wrongAttempts + 1;
+      setWrongAttempts(nextWrong);
+      setVerdict({
+        ok: false,
+        text: "Not yet. A wrong answer costs the same as a hint.",
+      });
+      void save({ attempts: nextAttempts, wrong_attempts: nextWrong });
     }
   }
 
@@ -147,26 +166,31 @@ export default function SolveClient({
   }
 
   /**
-   * Re-lock the hints and clear the solve so the problem can be attempted cold.
-   * The medal and its timestamp are deliberately left alone: what you already
-   * earned stays in the library until it lapses on its own.
+   * Re-lock the hints and clear the attempt so the problem can be worked cold.
+   * The medal is deliberately left alone: an earned medal is locked for its full
+   * window, so resetting cannot be used to grind a bronze up into a gold.
    */
   function resetAttempt() {
     setRevealed(0);
     setPending(0);
     setSolved(false);
-    setHintsAtSolve(0);
+    setWrongAttempts(0);
+    setLastCost(null);
+    setWasLocked(false);
     setChoice(null);
     setInput("");
     setVerdict(null);
-    void save({ solved: false, hints_revealed: 0, solved_at: null });
+    void save({ solved: false, hints_revealed: 0, wrong_attempts: 0, solved_at: null });
   }
 
   const earned = !ladder || solved || revealed >= M;
   const reviewOpen = solved || (M > 0 && revealed >= M);
   const shownMedal = activeMedal(medal, medalAt);
-  const canReset = revealed > 0 || solved;
+  const canReset = revealed > 0 || solved || wrongAttempts > 0;
   const left = daysLeft(medalAt);
+  const attemptMedal = lastCost == null ? null : medalForCost(lastCost);
+  const beatenByLock =
+    wasLocked && attemptMedal === "gold" && !!shownMedal && shownMedal !== "gold";
 
   const tagbits = [
     ...(problem.topics ?? []).map((t) => t.toUpperCase()),
@@ -184,10 +208,12 @@ export default function SolveClient({
             DIFFICULTY {problem.difficulty ?? "?"} / 10
           </span>
           <span className="mono m m-tags">{tagbits}</span>
-          {solved && (
-            <span className={"solved-pill " + medalForHints(hintsAtSolve)}>
-              {medalForHints(hintsAtSolve).toUpperCase()} &middot; {hintsAtSolve} HINT
-              {hintsAtSolve === 1 ? "" : "S"}
+          {shownMedal && (
+            <span className={"solved-pill " + shownMedal}>
+              {shownMedal.toUpperCase()} &middot;{" "}
+              {medalLapses(shownMedal)
+                ? left + (left === 1 ? " DAY LEFT" : " DAYS LEFT")
+                : "PERMANENT"}
             </span>
           )}
         </div>
@@ -252,10 +278,31 @@ export default function SolveClient({
           <button className="btn" onClick={check} disabled={!ready || solved}>
             CHECK
           </button>
-          {verdict && (
-            <span className={"verdict " + (verdict.ok ? "ok" : "no")}>{verdict.text}</span>
-          )}
         </div>
+
+        {/* Deliberately OUTSIDE the answer row: a verdict rendered beside the
+            choices reflows them every time it appears or changes length. */}
+        {(verdict || (solved && lastCost != null)) && (
+          <div className="verdict-row">
+            {verdict && (
+              <span className={"verdict " + (verdict.ok ? "ok" : "no")}>{verdict.text}</span>
+            )}
+            {solved && lastCost != null && (
+              <span className="verdict-cost mono">
+                THIS ATTEMPT &middot; {costLabel(revealed, wrongAttempts)}
+                {attemptMedal ? " · " + attemptMedal.toUpperCase() : ""}
+              </span>
+            )}
+          </div>
+        )}
+
+        {beatenByLock && (
+          <div className="lock-note">
+            You solved it clean this time, but your {shownMedal} is locked for {left} more
+            day{left === 1 ? "" : "s"}. Come back once it lapses and solve it cold to take
+            the gold.
+          </div>
+        )}
 
         {canReset && (
           <div className="reset-row">
@@ -264,15 +311,15 @@ export default function SolveClient({
             </button>
             <span className="reset-note">
               {!shownMedal
-                ? "Re-locks the hints so you can work the problem cold."
+                ? "Clears your hints and guesses so you can work the problem cold."
                 : !medalLapses(shownMedal)
-                ? "Re-locks the hints for a clean attempt. Your gold is permanent, so it stays in the library for good."
-                : "Re-locks the hints for a clean attempt. Your " +
+                ? "Clears your hints and guesses. Your gold is permanent, so it stays for good."
+                : "Clears your hints and guesses. Your " +
                   shownMedal +
-                  " stays in the library for " +
+                  " is locked for " +
                   left +
                   (left === 1 ? " more day" : " more days") +
-                  ", and solving again with no hints earns a gold that never fades."}
+                  " either way, so a retry now cannot change it."}
             </span>
           </div>
         )}

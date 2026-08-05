@@ -8,20 +8,38 @@ export function medalLapses(medal: Medal): boolean {
   return medal !== "gold";
 }
 
-const RANK: Record<Medal, number> = { gold: 3, silver: 2, bronze: 1 };
+/**
+ * What a solve cost: every revealed hint plus every wrong guess. A wrong answer
+ * is information too, so it is priced the same as peeking at a rung.
+ */
+export function solveCost(hintsRevealed: number, wrongAttempts: number): number {
+  return Math.max(0, hintsRevealed) + Math.max(0, wrongAttempts);
+}
 
-/** Hints spent at the moment of the solve decide the medal. */
-export function medalForHints(hints: number): Medal {
-  if (hints <= 0) return "gold";
-  if (hints === 1) return "silver";
+/** Cost at the moment of the solve decides the medal. */
+export function medalForCost(cost: number): Medal {
+  if (cost <= 0) return "gold";
+  if (cost === 1) return "silver";
   return "bronze";
 }
 
-/** Higher of two medals, so a cleaner re-solve upgrades and a worse one does not demote. */
-export function bestMedal(a: Medal | null, b: Medal | null): Medal | null {
-  if (!a) return b;
-  if (!b) return a;
-  return RANK[a] >= RANK[b] ? a : b;
+/**
+ * A medal is LOCKED while it is active. Re-solving during the window does not
+ * change it, which is the point: you cannot grind a bronze into a gold by
+ * resetting and immediately retrying. Wait for it to lapse, then earn it cold.
+ * Gold never lapses, so gold is final.
+ */
+export function medalAfterSolve(
+  current: Medal | null,
+  currentAt: string | null,
+  cost: number,
+  now = Date.now()
+): { medal: Medal; medalAt: string; locked: boolean } {
+  const active = activeMedal(current, currentAt, now);
+  if (active && currentAt) {
+    return { medal: active, medalAt: currentAt, locked: true };
+  }
+  return { medal: medalForCost(cost), medalAt: new Date(now).toISOString(), locked: false };
 }
 
 export function isExpired(medalAt: string | null | undefined, now = Date.now()): boolean {
