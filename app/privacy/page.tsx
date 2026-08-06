@@ -76,17 +76,17 @@ export default function PrivacyPage() {
             and your anonymous practice record.
           </li>
           <li>
-            <strong>Google Fonts</strong> serves the two typefaces the site uses. Your browser
-            requests them from Google, which means Google receives your IP address as part of
-            that request.
-          </li>
-          <li>
             <strong>Art of Problem Solving</strong> hosts some official contest figures, which
             your browser loads directly from their servers, and is where the &ldquo;full
             solutions&rdquo; links point. Following those links takes you to a site with its
             own privacy policy.
           </li>
         </ul>
+
+        <p>
+          Fonts are served from CruxMath itself rather than from a font CDN, so no third
+          party is contacted to render the page.
+        </p>
 
         <h2>5. How long we keep it</h2>
         <ul>

@@ -104,10 +104,28 @@ function renderSegments(segments: Segment[], escapeProse: boolean): string {
     .join("");
 }
 
+/**
+ * Rendering is pure and deterministic, so results are worth keeping. A browse
+ * page re-renders whenever medals arrive or a page is appended, and without this
+ * every visible statement would be typeset again from scratch each time.
+ * Bounded so a long session cannot grow it without limit.
+ */
+const RENDER_CACHE = new Map<string, string>();
+const RENDER_CACHE_MAX = 600;
+
+function memoized(key: string, render: () => string): string {
+  const hit = RENDER_CACHE.get(key);
+  if (hit !== undefined) return hit;
+  const out = render();
+  if (RENDER_CACHE.size >= RENDER_CACHE_MAX) RENDER_CACHE.clear();
+  RENDER_CACHE.set(key, out);
+  return out;
+}
+
 /** Render plain text that may contain math. Prose is HTML-escaped. */
 export function latexToHtml(text: string | null | undefined): string {
   if (!text) return "";
-  return renderSegments(scan(text), true);
+  return memoized("t:" + text, () => renderSegments(scan(text), true));
 }
 
 /**
@@ -117,6 +135,10 @@ export function latexToHtml(text: string | null | undefined): string {
  */
 export function latexInHtml(html: string | null | undefined): string {
   if (!html) return "";
+  return memoized("h:" + html, () => renderInHtml(html));
+}
+
+function renderInHtml(html: string): string {
   const parts = html.split(/(<svg[\s\S]*?<\/svg>)/gi);
   return parts
     .map((part) => {
