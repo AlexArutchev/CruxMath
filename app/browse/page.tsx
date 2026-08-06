@@ -14,14 +14,17 @@ async function facets() {
     console.warn(
       "[cruxmath] Supabase not configured, filter rail will be empty. See README."
     );
-    return { contests: [], tiers: [], topics: [] };
+    return { contests: [], tiers: [], topics: [], total: 0 };
   }
   const sb = supabaseServer();
   // Small projection over the corpus: enough to build the filter rail without
   // shipping statements to the client.
   // Same 1000-row cap applies here: without an explicit range the filter rail
   // would quietly omit facets from the tail of the corpus.
-  const { data, error } = await sb.from("problems").select("contest, tier, topics").range(0, 9999);
+  const [{ count }, { data, error }] = await Promise.all([
+    sb.from("problems").select("*", { count: "exact", head: true }),
+    sb.from("problems").select("contest, tier, topics").range(0, 9999),
+  ]);
   if (error) {
     // An empty filter rail is a misconfiguration, not a legitimately empty
     // corpus. Say so in the build/server log instead of rendering nothing.
@@ -32,15 +35,15 @@ async function facets() {
   const contests = Array.from(new Set(rows.map((r) => r.contest))).sort().reverse();
   const tiers = Array.from(new Set(rows.map((r) => r.tier).filter(Boolean) as string[])).sort();
   const topics = Array.from(new Set(rows.flatMap((r) => r.topics ?? []))).sort();
-  return { contests, tiers, topics };
+  return { contests, tiers, topics, total: count ?? 0 };
 }
 
 export default async function BrowsePage() {
-  const { contests, tiers, topics } = await facets();
+  const { contests, tiers, topics, total } = await facets();
   return (
     <>
       <Header active="library" />
-      <BrowseClient contests={contests} tiers={tiers} topics={topics} />
+      <BrowseClient contests={contests} tiers={tiers} topics={topics} archiveTotal={total} />
     </>
   );
 }

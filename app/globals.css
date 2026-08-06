@@ -253,3 +253,19 @@ a.wordmark:hover{color:var(--ox)}
 .legal strong{color:var(--ink);font-weight:600}
 .legal a{border-bottom:1px solid #D9BCB4}
 .legal .callout{border-left:2px solid var(--line);padding:2px 0 2px 14px;margin:0 0 12px}
+
+/* ---- Skeleton loaders ----
+   Bars sit in the real .row grid so the list does not reflow when results land. */
+:root{--skeleton:#EBE7DC}
+@keyframes sk-pulse{0%,100%{opacity:.45}50%{opacity:.95}}
+@keyframes sk-spin{to{transform:rotate(360deg)}}
+.sk-bar{height:10px;background:var(--skeleton);animation:sk-pulse 1.3s ease-in-out infinite;display:block}
+.sk-row{cursor:default}
+.sk-row:hover{background:transparent}
+.spinner{width:10px;height:10px;border:2px solid var(--line);border-top-color:var(--ox);border-radius:50%;animation:sk-spin 1s linear infinite;display:inline-block;vertical-align:-1px;margin-left:8px}
+@media(prefers-reduced-motion:reduce){
+  .sk-bar{animation:none;opacity:.7}
+  .spinner{animation:none;border-top-color:var(--line)}
+}
+/* Match the 26px text cell of a real row so nothing jumps when results land. */
+.sk-row>span{height:26px;display:flex;align-items:center}

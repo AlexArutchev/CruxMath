@@ -24,14 +24,43 @@ const HINTS = [
 
 const pct = (v: number) => ((v - 1) / 9) * 100;
 
+/** Statement bars vary in length so the placeholder reads as text, not a block. */
+const SK_STATEMENT_WIDTHS = ["72%", "58%", "80%", "64%", "76%", "68%"];
+const SK_CELL_WIDTHS = ["76%", "", "60%", "40%", "54%"];
+
+function SkeletonRows() {
+  return (
+    <div aria-hidden="true">
+      {SK_STATEMENT_WIDTHS.map((stmtWidth, r) => (
+        <div className="row sk-row" key={r}>
+          {SK_CELL_WIDTHS.map((w, c) => (
+            <span key={c}>
+              <span
+                className="sk-bar"
+                style={{
+                  width: c === 1 ? stmtWidth : w,
+                  // Cascade so the load reads as one sweep across the grid.
+                  animationDelay: (r * 0.1 + c * 0.05).toFixed(2) + "s",
+                }}
+              />
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function BrowseClient({
   contests,
   topics: allTopics,
   tiers: allTiers,
+  archiveTotal,
 }: {
   contests: string[];
   topics: string[];
   tiers: string[];
+  archiveTotal: number;
 }) {
   // Start from defaults so server and client agree on the first paint, then
   // restore from the URL (or the session backup) once mounted. The query is held
@@ -55,6 +84,7 @@ export default function BrowseClient({
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [medals, setMedals] = useState<Map<string, Medal>>(new Map());
 
   // Debounce typing so each keystroke does not fire a query.
@@ -96,6 +126,7 @@ export default function BrowseClient({
     if (!restored) return;
     let cancelled = false;
     setLoading(true);
+    setRows([]); // hand the space to the skeletons rather than stale results
     (async () => {
       const { data, count, error } = await build().range(0, PAGE_SIZE - 1);
       if (cancelled) return;
@@ -111,11 +142,11 @@ export default function BrowseClient({
   }, [build, restored]);
 
   async function loadMore() {
-    setLoading(true);
+    setLoadingMore(true);
     const { data } = await build().range(offset, offset + PAGE_SIZE - 1);
     setRows((prev) => [...prev, ...((data as Problem[]) ?? [])]);
     setOffset((o) => o + PAGE_SIZE);
-    setLoading(false);
+    setLoadingMore(false);
   }
 
   // Solved markers come from this device's own progress rows.
@@ -268,12 +299,21 @@ export default function BrowseClient({
       <div>
         <div className="listhd">
           <span className="l">
-            {loading && !shown
-              ? "SEARCHING…"
-              : total + " PROBLEM" + (total === 1 ? "" : "S") + " MATCH"}
+            {loading ? (
+              <>
+                SEARCHING {archiveTotal} STATEMENTS…
+                <span className="spinner" />
+              </>
+            ) : (
+              total + " PROBLEM" + (total === 1 ? "" : "S") + " MATCH"
+            )}
           </span>
-          <span className="r">{shown ? "SHOWING 1–" + shown + " OF " + total : ""}</span>
+          <span className="r">
+            {!loading && shown ? "SHOWING 1–" + shown + " OF " + total : ""}
+          </span>
         </div>
+
+        {loading && <SkeletonRows />}
 
         <div>
           {rows.map((p) => (
@@ -310,15 +350,17 @@ export default function BrowseClient({
 
         {shown < total && (
           <div style={{ textAlign: "center", padding: "18px 32px" }}>
-            <button className="loadmore" onClick={loadMore} disabled={loading}>
-              {loading ? "Loading…" : "Load more"}
+            <button className="loadmore" onClick={loadMore} disabled={loadingMore}>
+              {loadingMore ? "Loading…" : "Load more"}
             </button>
           </div>
         )}
 
-        <div className="foot">
-          {shown} of {total} shown · click any row to open it in Solve
-        </div>
+        {!loading && (
+          <div className="foot">
+            {shown} of {total} shown · click any row to open it in Solve
+          </div>
+        )}
       </div>
     </div>
   );
