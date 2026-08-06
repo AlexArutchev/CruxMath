@@ -215,10 +215,6 @@ export default function ProgressClient({
               </div>
             );
           })}
-          <p className="pg-note">
-            A bronze is still a solve, the ladder did its job. Golds are the ones you found
-            alone.
-          </p>
         </div>
 
         <div className="pg-hist">
