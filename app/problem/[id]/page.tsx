@@ -43,7 +43,7 @@ export default async function ProblemPage({
 
   return (
     <>
-      <Header active="solve" />
+      <Header />
       <SolveClient problem={problem} ladder={ladder} />
     </>
   );

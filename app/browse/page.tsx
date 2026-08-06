@@ -19,7 +19,9 @@ async function facets() {
   const sb = supabaseServer();
   // Small projection over the corpus: enough to build the filter rail without
   // shipping statements to the client.
-  const { data, error } = await sb.from("problems").select("contest, tier, topics");
+  // Same 1000-row cap applies here: without an explicit range the filter rail
+  // would quietly omit facets from the tail of the corpus.
+  const { data, error } = await sb.from("problems").select("contest, tier, topics").range(0, 9999);
   if (error) {
     // An empty filter rail is a misconfiguration, not a legitimately empty
     // corpus. Say so in the build/server log instead of rendering nothing.

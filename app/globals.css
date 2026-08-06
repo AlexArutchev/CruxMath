@@ -174,3 +174,65 @@ a.row{text-decoration:none;color:inherit}
 .verdict-row{margin-top:13px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;min-height:19px}
 .verdict-cost{font-weight:600;font-size:9.5px;letter-spacing:.12em;color:var(--mut)}
 .lock-note{margin-top:12px;font-style:italic;font-size:13px;line-height:1.55;color:var(--mut3);border-left:2px solid var(--gold-edge);padding-left:12px;max-width:560px}
+
+/* Wordmark doubles as the home link. */
+a.wordmark{color:inherit;text-decoration:none}
+a.wordmark:hover{color:var(--ox)}
+
+/* ---- Progress ---------------------------------------------------------- */
+.pg-band{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+.pg-band .lead{flex:1.2;padding:30px 40px;border-right:1px solid var(--line)}
+.pg-band .counters{flex:1;display:flex}
+.pg-band .counter{flex:1;padding:30px 26px;border-right:1px solid var(--line)}
+.pg-band .counter:last-child{border-right:none}
+.pg-label{font-weight:600;font-size:10px;letter-spacing:.16em;color:var(--mut);font-family:'IBM Plex Mono',monospace}
+.pg-big{font-weight:600;font-size:44px;font-family:'Source Serif 4',serif;line-height:1}
+.pg-of{font-style:italic;font-size:13px;color:var(--mut)}
+.pg-num{font-weight:600;font-size:30px;font-family:'Source Serif 4',serif;margin-top:6px}
+.pg-cap{font-style:italic;font-size:11.5px;color:var(--mut);margin-top:2px}
+.pg-dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.pg-dot.gold{background:var(--gold)} .pg-dot.silver{background:var(--silver)} .pg-dot.bronze{background:var(--bronze)}
+.pg-split{display:flex;height:5px;margin-top:16px;max-width:360px;background:#EFEBE0}
+.pg-split .gold{background:var(--gold)} .pg-split .silver{background:var(--silver)} .pg-split .bronze{background:var(--bronze)}
+
+.pg-mid{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.pg-contests{padding:28px 40px;border-right:1px solid var(--line)}
+.pg-crow{display:grid;grid-template-columns:78px 1fr 118px;gap:16px;align-items:center;padding:13px 0;border-bottom:1px solid var(--rowline,#EFEBE0)}
+.pg-crow:last-of-type{border-bottom:none}
+.pg-cname{font-weight:600;font-size:11px;color:var(--mut2);font-family:'IBM Plex Mono',monospace}
+.pg-csolved{font-weight:600;font-size:15px;font-family:'Source Serif 4',serif}
+.pg-ctotal{font-style:italic;font-size:12px;color:var(--mut)}
+.pg-cbar{display:flex;height:4px;margin-top:6px;max-width:260px;background:#EFEBE0}
+.pg-cbar .gold{background:var(--gold)} .pg-cbar .silver{background:var(--silver)} .pg-cbar .bronze{background:var(--bronze)}
+.pg-ccounts{display:flex;gap:10px;justify-content:flex-end;font-weight:600;font-size:10.5px;font-family:'IBM Plex Mono',monospace}
+.pg-note{font-style:italic;font-size:12px;line-height:1.55;color:var(--mut);margin:14px 0 0;max-width:420px}
+
+.pg-hist{padding:28px 40px;background:var(--panel)}
+.pg-bars{display:flex;align-items:flex-end;gap:9px;height:132px;max-width:480px;border-bottom:1px solid #DCD6C8}
+.pg-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end}
+.pg-col .gold{background:var(--gold)} .pg-col .silver{background:var(--silver)} .pg-col .bronze{background:var(--bronze)}
+.pg-axis{display:flex;gap:9px;max-width:480px;margin-top:7px}
+.pg-axis span{flex:1;text-align:center;font-weight:500;font-size:9.5px;color:var(--mut);font-family:'IBM Plex Mono',monospace}
+
+.pg-ledger{padding:24px 40px 32px}
+.pg-filters{display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:16px}
+.pg-fgroup{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pg-matchbar{display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pg-lrow{display:grid;grid-template-columns:24px 148px 1fr 96px 130px;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--rowline,#EFEBE0);color:inherit;text-decoration:none}
+.pg-lrow:hover{background:#F5F2EA}
+.pg-lsrc{font-weight:500;font-size:10.5px;color:var(--mut2);font-family:'IBM Plex Mono',monospace}
+.pg-ltex{font-size:13.5px;line-height:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-ldiff{font-weight:600;font-size:11.5px;font-family:'IBM Plex Mono',monospace}
+.pg-lmeta{font-weight:500;font-size:9.5px;letter-spacing:.08em;color:var(--mut);font-family:'IBM Plex Mono',monospace;text-align:right}
+.pg-empty{font-style:italic;font-size:13px;color:var(--mut2);padding:26px 0}
+@media(max-width:900px){.pg-band{flex-direction:column}.pg-band .lead{border-right:none;border-bottom:1px solid var(--line)}.pg-mid{grid-template-columns:1fr}.pg-contests{border-right:none;border-bottom:1px solid var(--line)}.pg-lrow{grid-template-columns:24px 1fr 96px}.pg-lrow .pg-ltex,.pg-lrow .pg-lmeta{display:none}}
+
+/* One-line previews: some statements put their answer choices in $$display$$
+   math, which KaTeX renders as a block and which breaks out of the nowrap row.
+   Force those inline so every preview stays exactly one line. */
+.r-tex .katex-display,.pg-ltex .katex-display{display:inline;margin:0}
+.r-tex .katex-display>.katex,.pg-ltex .katex-display>.katex{display:inline}
+.r-tex p,.pg-ltex p{display:inline;margin:0}
+/* Tall nested fractions otherwise stretch a row well past its neighbours and
+   the dense list loses its rhythm. Pin the preview to one line and clip. */
+.r-tex,.pg-ltex{height:26px}

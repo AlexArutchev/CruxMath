@@ -1,15 +1,21 @@
 import Link from "next/link";
 
-export default function Header({ active }: { active: "solve" | "library" }) {
+/**
+ * The wordmark is the way home. SOLVE and LIBRARY were separate tabs pointing at
+ * the same place, so the nav is just PROGRESS now.
+ */
+export default function Header({ active }: { active?: "library" | "progress" }) {
   return (
     <header>
       <div className="brand">
-        <span className="wordmark">CRUXMATH</span>
-        <Link className={`mono nav${active === "solve" ? " on" : ""}`} href="/browse">
-          SOLVE
+        <Link className="wordmark" href="/browse">
+          CRUXMATH
         </Link>
-        <Link className={`mono nav${active === "library" ? " on" : ""}`} href="/browse">
-          LIBRARY
+        <Link
+          className={"mono nav" + (active === "progress" ? " on" : "")}
+          href="/progress"
+        >
+          PROGRESS
         </Link>
       </div>
     </header>
