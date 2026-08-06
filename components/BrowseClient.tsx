@@ -5,6 +5,13 @@ import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { activeMedal, type Medal } from "@/lib/medal";
+import {
+  freshFilters,
+  filtersToQuery,
+  loadFilters,
+  saveFilters,
+  type Filters,
+} from "@/lib/browse-filters";
 import type { Problem } from "@/lib/types";
 
 const PAGE_SIZE = 30;
@@ -14,30 +21,6 @@ const HINTS = [
   { key: "with", label: "WITH LADDER" },
   { key: "without", label: "NO LADDER" },
 ] as const;
-
-type Hints = (typeof HINTS)[number]["key"];
-
-type Filters = {
-  q: string;
-  year: string;
-  type: string | null;
-  tiers: Set<string>;
-  topics: Set<string>;
-  hints: Hints;
-  dlo: number;
-  dhi: number;
-};
-
-const fresh = (): Filters => ({
-  q: "",
-  year: "",
-  type: null,
-  tiers: new Set<string>(),
-  topics: new Set<string>(),
-  hints: "all",
-  dlo: 1,
-  dhi: 10,
-});
 
 const pct = (v: number) => ((v - 1) / 9) * 100;
 
@@ -50,7 +33,24 @@ export default function BrowseClient({
   topics: string[];
   tiers: string[];
 }) {
-  const [f, setF] = useState<Filters>(fresh);
+  // Start from defaults so server and client agree on the first paint, then
+  // restore from the URL (or the session backup) once mounted. The query is held
+  // back until then so a restored view never flashes an unfiltered list first.
+  const [f, setF] = useState<Filters>(freshFilters);
+  const [restored, setRestored] = useState(false);
+
+  useEffect(() => {
+    setF(loadFilters(window.location.search));
+    setRestored(true);
+  }, []);
+
+  // Keep the address bar in step without pushing a history entry per keystroke.
+  useEffect(() => {
+    if (!restored) return;
+    const q = filtersToQuery(f);
+    window.history.replaceState(null, "", q || window.location.pathname);
+    saveFilters(f);
+  }, [f, restored]);
   const [rows, setRows] = useState<Problem[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -93,6 +93,7 @@ export default function BrowseClient({
   }, [debouncedQ, f.year, f.type, f.tiers, f.topics, f.hints, f.dlo, f.dhi]);
 
   useEffect(() => {
+    if (!restored) return;
     let cancelled = false;
     setLoading(true);
     (async () => {
@@ -107,7 +108,7 @@ export default function BrowseClient({
     return () => {
       cancelled = true;
     };
-  }, [build]);
+  }, [build, restored]);
 
   async function loadMore() {
     setLoading(true);
@@ -259,7 +260,7 @@ export default function BrowseClient({
           </div>
         </div>
 
-        <span className="clear" onClick={() => setF(fresh())}>
+        <span className="clear" onClick={() => setF(freshFilters())}>
           CLEAR ALL
         </span>
       </div>
