@@ -275,3 +275,9 @@ a.wordmark:hover{color:var(--ox)}
 /* Skip layout and paint for rows scrolled out of view. The intrinsic size keeps
    the scrollbar honest so this costs no layout stability. */
 .row,.pg-lrow{content-visibility:auto;contain-intrinsic-size:auto 48px}
+
+/* ---- Solve-page skeleton ---- */
+.sk-stack{display:flex;flex-direction:column;gap:9px}
+.sk-meta{display:flex;gap:16px;margin-bottom:22px}
+.sk-aside-rung{border-top:1px solid var(--line);padding:16px 0 18px}
+.sk-aside-rung:last-of-type{border-bottom:1px solid var(--line)}

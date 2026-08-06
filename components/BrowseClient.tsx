@@ -348,7 +348,9 @@ export default function BrowseClient({
           ))}
         </div>
 
-        {shown < total && (
+        {/* total still holds the previous result count while a new query runs,
+            so this has to wait for loading to clear or it paints over the skeletons. */}
+        {!loading && shown < total && (
           <div style={{ textAlign: "center", padding: "18px 32px" }}>
             <button className="loadmore" onClick={loadMore} disabled={loadingMore}>
               {loadingMore ? "Loading…" : "Load more"}
