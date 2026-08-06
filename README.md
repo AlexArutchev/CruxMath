@@ -94,4 +94,8 @@ supabase/
 
 ## License
 
-MIT
+Mozilla Public License 2.0. See [LICENSE](LICENSE).
+
+MPL-2.0 is file-level copyleft: CruxMath can be used inside a larger work, including
+a proprietary one, but changes to the MPL-covered files themselves must be published
+under the same license.

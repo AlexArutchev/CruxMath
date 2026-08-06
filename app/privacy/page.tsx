@@ -52,8 +52,8 @@ export default function PrivacyPage() {
 
         <h2>2. Technical data our providers see</h2>
         <p>
-          Like any website, CruxMath cannot operate without its hosting and database
-          providers briefly processing your <strong>IP address and browser user-agent</strong>
+          CruxMath cannot operate without its hosting and database
+          providers briefly processing your <strong>IP address and browser user-agent</strong>{" "}
           in order to deliver pages, create your anonymous session, and block abuse. That
           happens inside Vercel and Supabase. We do not store it in the application, do not
           use it to build a profile of you, and do not combine it with your practice record.
