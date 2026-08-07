@@ -360,7 +360,7 @@ export default function BrowseClient({
 
         {!loading && (
           <div className="foot">
-            {shown} of {total} shown · click any row to open it in Solve
+            {shown} of {total} shown · click any row to attempt the problem
           </div>
         )}
       </div>
