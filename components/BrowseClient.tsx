@@ -86,7 +86,14 @@ export default function BrowseClient({
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Two views of the same rows, and they are not interchangeable.
+  // `medals` is what the library PAINTS: silver and bronze lapse after
+  // MEDAL_TTL_DAYS so those problems resurface, which is the spaced repetition.
+  // `earned` is the permanent record of what was won. Filtering has to use the
+  // record: "show me my bronzes" means every bronze, not the ones from this
+  // week, and gold never lapsing is why only gold appeared to work.
   const [medals, setMedals] = useState<Map<string, Medal>>(new Map());
+  const [earned, setEarned] = useState<Map<string, Medal>>(new Map());
   // The medal filter cannot run until this device's progress has arrived, so the
   // query waits on it rather than briefly reporting zero matches.
   const [medalsLoaded, setMedalsLoaded] = useState(false);
@@ -120,9 +127,9 @@ export default function BrowseClient({
   const medalIds = useMemo(() => {
     if (!f.medals.size) return null;
     const ids: string[] = [];
-    for (const [id, m] of medals) if (f.medals.has(m)) ids.push(id);
+    for (const [id, m] of earned) if (f.medals.has(m)) ids.push(id);
     return ids;
-  }, [f.medals, medals]);
+  }, [f.medals, earned]);
 
   const build = useCallback(() => {
     const sb = supabaseBrowser();
@@ -212,12 +219,15 @@ export default function BrowseClient({
           .not("medal", "is", null);
         if (cancelled || !data) return;
         const now = Date.now();
-        const next = new Map<string, Medal>();
+        const painted = new Map<string, Medal>();
+        const won = new Map<string, Medal>();
         for (const r of data as { problem_id: string; medal: Medal; medal_at: string }[]) {
+          won.set(r.problem_id, r.medal);
           const m = activeMedal(r.medal, r.medal_at, now);
-          if (m) next.set(r.problem_id, m);
+          if (m) painted.set(r.problem_id, m);
         }
-        setMedals(next);
+        setMedals(painted);
+        setEarned(won);
       } catch (e) {
         // Sign-in or the progress read can fail (anonymous auth disabled, offline).
         // Markers are cosmetic, so the library still works without them.
@@ -352,7 +362,10 @@ export default function BrowseClient({
           </div>
           {/* Only shown once we know it is true, so it never contradicts a list
               that is still loading. */}
-          {medalsLoaded && medals.size === 0 && (
+          {/* Keyed to the record, not the painted map: once every medal has
+              lapsed the painted map empties, and this would have claimed
+              nothing was ever solved. */}
+          {medalsLoaded && earned.size === 0 && (
             <div className="fnote">Nothing solved yet</div>
           )}
         </div>

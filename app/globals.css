@@ -275,7 +275,12 @@ a.row{text-decoration:none;color:inherit}
   .tour-dot,.tour-cursor,.tour-mdot,.tour-row.r0,.tour-row.r2{animation:none}
   .tour-mrow{animation-delay:0s}
   .tour-modal{animation:tour-fade .4s ease-out}
-  .tour-cursor{display:none}
+  /* Park the pointer mid-click on the first laddered row rather than removing
+     it. The click is the point step 1 is making, so reduced motion has to take
+     away the travel and keep the picture. Coordinates are the cursor keyframe's
+     first resting stop, which measures inside row 1's band. */
+  .tour-cursor{transform:translate(150px,23px)}
+  .tour-row.r0{background:#EFE4D8}
 }
 
 /* Reset control */
