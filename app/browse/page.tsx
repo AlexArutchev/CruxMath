@@ -3,7 +3,12 @@ import BrowseClient from "@/components/BrowseClient";
 import Tour from "@/components/Tour";
 import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
 
-export const metadata = { title: "Library" };
+// This is the URL that actually gets shared, so the preview has to stand alone.
+// "Library" told a stranger nothing.
+export const metadata = {
+  title: "AMC and AIME problems",
+  openGraph: { title: "AMC and AIME problems" },
+};
 
 // Facet lists change only when content is reseeded.
 export const revalidate = 3600;

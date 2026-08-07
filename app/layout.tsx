@@ -21,10 +21,31 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+/** One sentence, and it is the first thing anyone sees when the link is pasted
+ *  into Discord or a group chat, so it has to sound like a person wrote it. */
+const DESCRIPTION =
+  "AMC and AIME practice with hints that come one at a time, so you can get unstuck without seeing the whole solution.";
+
 export const metadata: Metadata = {
+  // Absolute URLs for the link preview. Without this Next warns and og:url
+  // resolves against nothing.
+  metadataBase: new URL("https://www.cruxmath.com"),
   title: { default: "CruxMath", template: "%s | CruxMath" },
-  description:
-    "Competition math practice built around hint ladders: each rung says why you would think of the move, not just the move.",
+  description: DESCRIPTION,
+  // Set explicitly: with no og tags a Discord unfurl falls back to <title>,
+  // which on the shared /browse link read "Library | CruxMath".
+  openGraph: {
+    type: "website",
+    siteName: "CruxMath",
+    url: "/",
+    title: { default: "CruxMath", template: "%s | CruxMath" },
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary",
+    title: { default: "CruxMath", template: "%s | CruxMath" },
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
