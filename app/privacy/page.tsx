@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 export const metadata = { title: "Privacy Policy" };
 
 // One place to change the address that appears throughout the policy.
-const CONTACT_EMAIL = "REPLACE-ME@example.com";
+const CONTACT_EMAIL = "support@cruxmath.com";
 const LAST_UPDATED = "August 6, 2026";
 
 export default function PrivacyPage() {
