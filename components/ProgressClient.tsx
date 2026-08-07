@@ -167,7 +167,7 @@ export default function ProgressClient({
             <div className="counter" key={m}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span className={"pg-dot " + m} />
-                <span className="pg-label" style={{ color: "var(--" + m + "-ink, var(--" + m + "))" }}>
+                <span className="pg-label" style={{ color: "var(--" + m + ")" }}>
                   {m.toUpperCase()}
                 </span>
               </div>
@@ -213,7 +213,7 @@ export default function ProgressClient({
                   </span>
                 </span>
                 <span className="pg-ccounts">
-                  <span style={{ color: "var(--gold-ink)" }}>{c.counts.gold}</span>
+                  <span style={{ color: "var(--gold)" }}>{c.counts.gold}</span>
                   <span style={{ color: "var(--silver)" }}>{c.counts.silver}</span>
                   <span style={{ color: "var(--bronze)" }}>{c.counts.bronze}</span>
                 </span>
@@ -353,7 +353,7 @@ export default function ProgressClient({
                 (filterLabel ? " — " + filterLabel : "")}
           </span>
           <span className="pg-ccounts">
-            <span style={{ color: "var(--gold-ink)" }}>{ledgerCounts.gold} G</span>
+            <span style={{ color: "var(--gold)" }}>{ledgerCounts.gold} G</span>
             <span style={{ color: "var(--silver)" }}>{ledgerCounts.silver} S</span>
             <span style={{ color: "var(--bronze)" }}>{ledgerCounts.bronze} B</span>
           </span>

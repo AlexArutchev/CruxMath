@@ -148,7 +148,7 @@ a.row{text-decoration:none;color:inherit}
    so saturation that reads fine on one row becomes noise over thirty. The dot
    carries the real signal, the tint is the at-a-glance layer. */
 :root{
-  --gold:#C79A2E; --gold-ink:#9E7618; --gold-bg:#FDF5E3; --gold-edge:#E8CE8F;
+  --gold:#C79A2E; --gold-bg:#FDF5E3; --gold-edge:#E8CE8F;
   --silver:#7E858C; --silver-bg:#F1F2F3; --silver-edge:#D2D6DA;
   --bronze:#A0663A; --bronze-bg:#F8EDE4; --bronze-edge:#E0C3A9;
 }
@@ -162,7 +162,7 @@ a.row{text-decoration:none;color:inherit}
 .r-medal.gold{background:var(--gold)} .r-medal.silver{background:var(--silver)} .r-medal.bronze{background:var(--bronze)}
 
 /* Solve-page pill, tinted to match whatever was earned. */
-.solved-pill.gold{color:var(--gold-ink);border-color:var(--gold-edge);background:var(--gold-bg)}
+.solved-pill.gold{color:var(--gold);border-color:var(--gold-edge);background:var(--gold-bg)}
 .solved-pill.silver{color:var(--silver);border-color:var(--silver-edge);background:var(--silver-bg)}
 .solved-pill.bronze{color:var(--bronze);border-color:var(--bronze-edge);background:var(--bronze-bg)}
 
