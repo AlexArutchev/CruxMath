@@ -105,7 +105,13 @@ export default function BrowseClient({
 
   const build = useCallback(() => {
     const sb = supabaseBrowser();
-    let query = sb.from("problems").select("*", { count: "exact" });
+    // Explicit projection: select("*") would ship the answer column for every
+    // row straight to the browser, visible in the network tab.
+    let query = sb
+      .from("problems")
+      .select("id, contest, num, statement, difficulty, tier, topics, figure_img, has_ladder", {
+        count: "exact",
+      });
 
     if (debouncedQ.trim()) {
       query = query.textSearch("statement_fts", debouncedQ.trim(), { type: "websearch" });

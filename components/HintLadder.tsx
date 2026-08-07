@@ -28,7 +28,7 @@ export default function HintLadder({
   onConfirm,
   onCancel,
 }: {
-  rungs: Rung[];
+  rungs: (Rung | null)[];
   revealed: number;
   pending: number;
   solved: boolean;
@@ -75,11 +75,11 @@ export default function HintLadder({
               <>
                 <div className="rhead">
                   <span className={`rnum${solved && idx > revealed ? " lk" : ""}`}>{roman}</span>
-                  <span className="rtitle">{r.title}</span>
+                  <span className="rtitle">{r ? r.title : "Loading…"}</span>
                 </div>
                 <div
                   className="rbody"
-                  dangerouslySetInnerHTML={{ __html: latexInHtml(r.bodyHtml) }}
+                  dangerouslySetInnerHTML={{ __html: r ? latexInHtml(r.bodyHtml) : "" }}
                 />
               </>
             ) : confirming ? (

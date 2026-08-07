@@ -44,10 +44,21 @@ export default async function ProblemPage({
   const { problem, ladder } = await load(id);
   if (!problem) notFound();
 
+  // Props to a Client Component end up in the page source. Send the statement
+  // and metadata, but never the answer, the rung bodies, or the review.
+  const { answer, ...safeProblem } = problem;
+  const isChoice = !!answer && /^[A-E]$/i.test(answer.trim());
+  const isInteger = !!answer && /^d{1,3}$/.test(answer.trim());
+
   return (
     <>
       <Header />
-      <SolveClient problem={problem} ladder={ladder} />
+      <SolveClient
+        problem={safeProblem}
+        answerKind={isChoice ? "choice" : isInteger ? "integer" : "other"}
+        rungCount={ladder ? ladder.rungs.length : 0}
+        hasLadder={!!ladder}
+      />
     </>
   );
 }
