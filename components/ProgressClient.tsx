@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
+import ProgressSkeleton from "./ProgressSkeleton";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import type { Medal } from "@/lib/medal";
 import {
@@ -140,6 +141,10 @@ export default function ProgressClient({
   ]
     .filter(Boolean)
     .join(" · ");
+
+  // The shell can arrive well before the record does, especially with a few
+  // hundred solves. Reuse the route skeleton so the two phases look identical.
+  if (loading) return <ProgressSkeleton />;
 
   return (
     <div>
