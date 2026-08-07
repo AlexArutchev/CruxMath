@@ -5,6 +5,7 @@ import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { activeMedal, type Medal } from "@/lib/medal";
+import { MEDAL_ORDER } from "@/lib/progress";
 import {
   freshFilters,
   filtersToQuery,
@@ -86,6 +87,9 @@ export default function BrowseClient({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [medals, setMedals] = useState<Map<string, Medal>>(new Map());
+  // The medal filter cannot run until this device's progress has arrived, so the
+  // query waits on it rather than briefly reporting zero matches.
+  const [medalsLoaded, setMedalsLoaded] = useState(false);
 
   // Debounce typing so each keystroke does not fire a query.
   const [debouncedQ, setDebouncedQ] = useState("");
@@ -96,12 +100,29 @@ export default function BrowseClient({
 
   const patch = (p: Partial<Filters>) => setF((prev) => ({ ...prev, ...p }));
 
-  const toggle = (set: Set<string>, v: string) => {
+  const toggle = <T,>(set: Set<T>, v: T): Set<T> => {
     const next = new Set(set);
     if (next.has(v)) next.delete(v);
     else next.add(v);
     return next;
   };
+
+  /**
+   * Problem ids carrying one of the selected medals, or null when no medal
+   * filter is on.
+   *
+   * The medal a row should honour is not a column: silver and bronze lapse after
+   * MEDAL_TTL_DAYS, and that decision lives in activeMedal, in TypeScript. So the
+   * filter resolves to an explicit id list here and the database narrows to it,
+   * which keeps the exact count and the paging correct. An empty list is a real
+   * answer (nothing earned yet) and is handled without a query.
+   */
+  const medalIds = useMemo(() => {
+    if (!f.medals.size) return null;
+    const ids: string[] = [];
+    for (const [id, m] of medals) if (f.medals.has(m)) ids.push(id);
+    return ids;
+  }, [f.medals, medals]);
 
   const build = useCallback(() => {
     const sb = supabaseBrowser();
@@ -122,18 +143,40 @@ export default function BrowseClient({
     if (f.topics.size) query = query.overlaps("topics", Array.from(f.topics));
     if (f.hints === "with") query = query.eq("has_ladder", true);
     if (f.hints === "without") query = query.eq("has_ladder", false);
+    if (medalIds) query = query.in("id", medalIds);
     if (f.dlo > 1) query = query.gte("difficulty", f.dlo);
     if (f.dhi < 10) query = query.lte("difficulty", f.dhi);
 
     return query.order("difficulty", { ascending: true }).order("id", { ascending: true });
-  }, [debouncedQ, f.year, f.type, f.tiers, f.topics, f.hints, f.dlo, f.dhi]);
+  }, [debouncedQ, f.year, f.type, f.tiers, f.topics, f.hints, medalIds, f.dlo, f.dhi]);
 
   useEffect(() => {
     if (!restored) return;
     let cancelled = false;
     setLoading(true);
     setRows([]); // hand the space to the skeletons rather than stale results
+
+    // A medal filter cannot be resolved until this device's progress arrives.
+    // The loading state is entered FIRST and held: bailing out before it would
+    // leave the previous, unfiltered rows on screen under an active filter,
+    // which reads as a wrong answer rather than as a pending one. The effect
+    // re-runs when medalsLoaded flips.
+    if (f.medals.size && !medalsLoaded) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
     (async () => {
+      // Nothing earned in the selected medals: an empty answer, not a query.
+      // PostgREST would also have to be handed an empty in() list.
+      if (medalIds && medalIds.length === 0) {
+        setRows([]);
+        setTotal(0);
+        setOffset(0);
+        setLoading(false);
+        return;
+      }
       const { data, count, error } = await build().range(0, PAGE_SIZE - 1);
       if (cancelled) return;
       if (error) console.warn("[cruxmath] browse query failed:", error.message);
@@ -145,7 +188,7 @@ export default function BrowseClient({
     return () => {
       cancelled = true;
     };
-  }, [build, restored]);
+  }, [build, restored, medalIds, f.medals, medalsLoaded]);
 
   async function loadMore() {
     setLoadingMore(true);
@@ -159,21 +202,31 @@ export default function BrowseClient({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const id = await ensureDeviceUser();
-      if (!id || cancelled) return;
-      const { data } = await supabaseBrowser()
-        .from("user_progress")
-        .select("problem_id, medal, medal_at")
-        .eq("user_id", id)
-        .not("medal", "is", null);
-      if (cancelled || !data) return;
-      const now = Date.now();
-      const next = new Map<string, Medal>();
-      for (const r of data as { problem_id: string; medal: Medal; medal_at: string }[]) {
-        const m = activeMedal(r.medal, r.medal_at, now);
-        if (m) next.set(r.problem_id, m);
+      try {
+        const id = await ensureDeviceUser();
+        if (cancelled || !id) return;
+        const { data } = await supabaseBrowser()
+          .from("user_progress")
+          .select("problem_id, medal, medal_at")
+          .eq("user_id", id)
+          .not("medal", "is", null);
+        if (cancelled || !data) return;
+        const now = Date.now();
+        const next = new Map<string, Medal>();
+        for (const r of data as { problem_id: string; medal: Medal; medal_at: string }[]) {
+          const m = activeMedal(r.medal, r.medal_at, now);
+          if (m) next.set(r.problem_id, m);
+        }
+        setMedals(next);
+      } catch (e) {
+        // Sign-in or the progress read can fail (anonymous auth disabled, offline).
+        // Markers are cosmetic, so the library still works without them.
+        console.warn("[cruxmath] progress load failed:", (e as Error).message);
+      } finally {
+        // Settled on EVERY path, including the failures above. A medal filter
+        // waits on this flag, so leaving it false would hang the list forever.
+        if (!cancelled) setMedalsLoaded(true);
       }
-      setMedals(next);
     })();
     return () => {
       cancelled = true;
@@ -198,10 +251,12 @@ export default function BrowseClient({
         />
 
         <div>
-          <div className="flabel">CONTEST</div>
+          <div className="flabel">YEAR</div>
           <input
             className="cyear"
-            placeholder={"Year (any of " + years.length + ")"}
+            // Derived, not hardcoded: reads "2016+" today and stays right when
+            // the corpus grows backwards.
+            placeholder={years.length ? years.reduce((a, b) => (a < b ? a : b)) + "+" : "Year"}
             autoComplete="off"
             inputMode="numeric"
             value={f.year}
@@ -280,6 +335,26 @@ export default function BrowseClient({
               </span>
             ))}
           </div>
+        </div>
+
+        <div>
+          <div className="flabel">MEDAL</div>
+          <div className="seg">
+            {MEDAL_ORDER.map((m) => (
+              <span
+                key={m}
+                className={"segbtn medal-btn " + m + (f.medals.has(m) ? " on" : "")}
+                onClick={() => patch({ medals: toggle(f.medals, m) })}
+              >
+                {m.toUpperCase()}
+              </span>
+            ))}
+          </div>
+          {/* Only shown once we know it is true, so it never contradicts a list
+              that is still loading. */}
+          {medalsLoaded && medals.size === 0 && (
+            <div className="fnote">Nothing solved yet</div>
+          )}
         </div>
 
         <div>

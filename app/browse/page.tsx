@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import BrowseClient from "@/components/BrowseClient";
+import Tour from "@/components/Tour";
 import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
 
 export const metadata = { title: "Library" };
@@ -44,6 +45,10 @@ export default async function BrowsePage() {
     <>
       <Header active="library" />
       <BrowseClient contests={contests} tiers={tiers} topics={topics} archiveTotal={total} />
+      {/* The library is the landing surface, since / redirects here. The tour
+          renders over it and does not wait on the problem query, so a first
+          visit has something to read while the list loads behind the scrim. */}
+      <Tour />
     </>
   );
 }

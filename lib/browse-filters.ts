@@ -1,3 +1,6 @@
+import type { Medal } from "./medal";
+import { MEDAL_ORDER } from "./progress";
+
 export type Hints = "all" | "with" | "without";
 
 export type Filters = {
@@ -7,6 +10,8 @@ export type Filters = {
   tiers: Set<string>;
   topics: Set<string>;
   hints: Hints;
+  /** Medals to keep. Empty means no medal filter, not "none earned". */
+  medals: Set<Medal>;
   dlo: number;
   dhi: number;
 };
@@ -22,6 +27,7 @@ export function freshFilters(): Filters {
     tiers: new Set<string>(),
     topics: new Set<string>(),
     hints: "all",
+    medals: new Set<Medal>(),
     dlo: DIFF_MIN,
     dhi: DIFF_MAX,
   };
@@ -35,6 +41,7 @@ export function isDefault(f: Filters): boolean {
     f.tiers.size === 0 &&
     f.topics.size === 0 &&
     f.hints === "all" &&
+    f.medals.size === 0 &&
     f.dlo === DIFF_MIN &&
     f.dhi === DIFF_MAX
   );
@@ -56,6 +63,9 @@ export function filtersToQuery(f: Filters): string {
   if (f.tiers.size) p.set("tier", Array.from(f.tiers).join(","));
   if (f.topics.size) p.set("topic", Array.from(f.topics).join(","));
   if (f.hints !== "all") p.set("hints", f.hints);
+  // Written in MEDAL_ORDER, not insertion order, so the same selection always
+  // produces the same URL and shared links compare equal.
+  if (f.medals.size) p.set("medal", MEDAL_ORDER.filter((m) => f.medals.has(m)).join(","));
   if (f.dlo !== DIFF_MIN) p.set("dlo", String(f.dlo));
   if (f.dhi !== DIFF_MAX) p.set("dhi", String(f.dhi));
   const s = p.toString();
@@ -83,6 +93,13 @@ export function filtersFromQuery(search: string): Filters {
   if (topic) f.topics = new Set(topic.split(",").filter(Boolean));
   const hints = p.get("hints");
   if (hints === "with" || hints === "without") f.hints = hints;
+  const medal = p.get("medal");
+  if (medal) {
+    // Only known medal names survive, so a hand-edited URL cannot put a value
+    // in the set that no button can ever clear.
+    const names = medal.split(",");
+    f.medals = new Set(MEDAL_ORDER.filter((m) => names.includes(m)));
+  }
   f.dlo = clampDifficulty(p.get("dlo"), DIFF_MIN);
   f.dhi = clampDifficulty(p.get("dhi"), DIFF_MAX);
   if (f.dlo > f.dhi) {

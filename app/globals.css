@@ -161,10 +161,122 @@ a.row{text-decoration:none;color:inherit}
 .r-medal{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;vertical-align:middle}
 .r-medal.gold{background:var(--gold)} .r-medal.silver{background:var(--silver)} .r-medal.bronze{background:var(--bronze)}
 
+/* Library medal filter. Carries its own dot so the three read as medals at a
+   glance, and tints when selected rather than going ink-on-paper like the other
+   segmented controls, which would drop the only cue telling them apart. */
+.segbtn.medal-btn{display:flex;align-items:center;justify-content:center;gap:7px}
+.segbtn.medal-btn::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.segbtn.gold::before{background:var(--gold)}
+.segbtn.silver::before{background:var(--silver)}
+.segbtn.bronze::before{background:var(--bronze)}
+.segbtn.gold.on{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-edge)}
+.segbtn.silver.on{background:var(--silver-bg);color:var(--silver);border-color:var(--silver-edge)}
+.segbtn.bronze.on{background:var(--bronze-bg);color:var(--bronze);border-color:var(--bronze-edge)}
+.fnote{margin-top:8px;font-style:italic;font-size:11px;line-height:1.4;color:var(--mut)}
+
 /* Solve-page pill, tinted to match whatever was earned. */
 .solved-pill.gold{color:var(--gold);border-color:var(--gold-edge);background:var(--gold-bg)}
 .solved-pill.silver{color:var(--silver);border-color:var(--silver-edge);background:var(--silver-bg)}
 .solved-pill.bronze{color:var(--bronze);border-color:var(--bronze-edge);background:var(--bronze-bg)}
+
+/* ---- First-visit tour ----
+   The markup is server rendered and starts visible, so the modal paints on the
+   first frame while the library query is still in flight. The rule below is
+   what keeps that from costing returning visitors a flash: a blocking script
+   stamps the root before the body is parsed, and this hides the modal until
+   React unmounts it. */
+:root[data-tour="done"] .tour-scrim{display:none}
+
+.tour-scrim{position:fixed;inset:0;z-index:50;background:rgba(28,26,23,.42);display:flex;align-items:center;justify-content:center;padding:20px;animation:tour-fade .35s ease-out}
+.tour-modal{width:440px;max-width:100%;max-height:calc(100vh - 40px);overflow-y:auto;background:var(--paper);border:1px solid #DCD6C8;box-shadow:0 24px 60px rgba(28,26,23,.35);animation:tour-rise .4s cubic-bezier(.22,1,.36,1);outline:none}
+.tour-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:18px 26px 0}
+.tour-eyebrow{font-weight:600;font-size:9.5px;letter-spacing:.18em;color:var(--mut);font-family:var(--mono)}
+.tour-skip{font-weight:600;font-size:9.5px;letter-spacing:.1em;color:var(--mut);background:none;border:none;cursor:pointer;padding:0;font-family:var(--mono)}
+.tour-skip:hover{color:var(--mut3)}
+.tour-body{padding:16px 26px 0}
+.tour-h{font-weight:600;font-size:21px;line-height:1.3;margin:0;font-family:var(--serif)}
+.tour-p{font-weight:400;font-size:13.5px;line-height:1.65;color:var(--mut3);margin:10px 0 0}
+
+/* Step 1 */
+/* margin, not a text space: JSX collapses the gap before the element and the
+   dot ends up jammed against the colon. */
+.tour-dot{width:8px;height:8px;border-radius:50%;background:var(--ox);display:inline-block;margin-left:4px;animation:tour-dot 2.6s ease-in-out infinite}
+.tour-demo{margin:18px 0 0;border:1px solid var(--line);background:var(--panel);padding:10px 12px;position:relative;overflow:hidden}
+.tour-row{display:flex;gap:10px;align-items:center;padding:9px 10px;border-bottom:1px solid var(--line)}
+.tour-row:last-of-type{border-bottom:none}
+/* Only the laddered rows flash, and only as the looping cursor reaches them. */
+.tour-row.r0{animation:tour-rowa 6s ease-in-out infinite}
+.tour-row.r2{animation:tour-rowb 6s ease-in-out infinite}
+.tour-rdot{width:8px;height:8px;flex:none;border-radius:50%}
+.tour-rdot.on{background:var(--ox)}
+.tour-rsrc{font-weight:500;font-size:9.5px;color:var(--mut2);flex:none;font-family:var(--mono)}
+.tour-rstmt{font-weight:400;font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.tour-row:not(.r0):not(.r2) .tour-rstmt,.tour-row:not(.r0):not(.r2) .tour-rsrc{color:var(--mut)}
+.tour-rdiff{font-weight:600;font-size:10px;color:var(--mut);flex:none;font-family:var(--mono)}
+.tour-cursor{position:absolute;left:0;top:0;animation:tour-cursor 6s ease-in-out infinite;filter:drop-shadow(0 1px 2px rgba(28,26,23,.35));pointer-events:none}
+
+/* Step 2 */
+.tour-medals{margin:18px 0 0;border:1px solid var(--line);background:var(--panel);padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.tour-mrow{display:flex;align-items:center;gap:12px;animation:tour-slide .5s ease-out both}
+.tour-mdot{width:13px;height:13px;border-radius:50%;flex:none}
+.tour-mdot.gold{background:var(--gold);animation:tour-glow-gold 2.4s ease-in-out infinite}
+.tour-mdot.silver{background:var(--silver);animation:tour-glow-silver 2.4s ease-in-out infinite}
+.tour-mdot.bronze{background:var(--bronze);animation:tour-glow-bronze 2.4s ease-in-out infinite}
+.tour-mname{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut2);width:56px;flex:none;font-family:var(--mono)}
+.tour-mcap{font-style:italic;font-size:12.5px;color:var(--mut3)}
+.tour-mfoot{border-top:1px solid var(--line);padding-top:12px;display:flex;align-items:center;gap:10px}
+.tour-mfoot-l{font-weight:600;font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:var(--mono)}
+.tour-mfoot-a{font-weight:600;font-size:9.5px;letter-spacing:.13em;color:var(--ox);border-bottom:1px solid #D9BCB4;padding-bottom:1px;font-family:var(--mono)}
+
+/* Footer */
+.tour-ft{display:flex;align-items:center;justify-content:space-between;padding:20px 26px 22px}
+.tour-sdots{display:flex;gap:6px}
+.tour-sdot{width:7px;height:7px;border-radius:50%;background:#D9BCB4;display:inline-block}
+.tour-sdot.on{background:var(--ox)}
+.tour-btns{display:flex;gap:10px}
+.tour-back{font-weight:600;font-size:10px;letter-spacing:.1em;padding:9px 16px;background:none;color:var(--mut2);border:1px solid #C9C2B4;border-radius:2px;cursor:pointer;font-family:var(--mono)}
+.tour-next{font-weight:600;font-size:10px;letter-spacing:.12em;padding:9px 18px;background:var(--ox);color:var(--paper);border:none;border-radius:2px;cursor:pointer;font-family:var(--mono)}
+
+@keyframes tour-fade{from{opacity:0}to{opacity:1}}
+@keyframes tour-rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes tour-slide{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes tour-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.45);opacity:.75}}
+@keyframes tour-glow-gold{0%,100%{box-shadow:0 0 0 0 rgba(199,154,46,0)}50%{box-shadow:0 0 0 5px rgba(199,154,46,.18)}}
+@keyframes tour-glow-silver{0%,100%{box-shadow:0 0 0 0 rgba(126,133,140,0)}50%{box-shadow:0 0 0 5px rgba(126,133,140,.18)}}
+@keyframes tour-glow-bronze{0%,100%{box-shadow:0 0 0 0 rgba(160,102,58,0)}50%{box-shadow:0 0 0 5px rgba(160,102,58,.18)}}
+@keyframes tour-rowa{0%,18%{background:transparent}23%,32%{background:#EFE4D8}42%,100%{background:transparent}}
+@keyframes tour-rowb{0%,63%{background:transparent}68%,77%{background:#EFE4D8}87%,100%{background:transparent}}
+@keyframes tour-cursor{
+  0%{transform:translate(330px,110px) scale(1)}
+  18%{transform:translate(150px,22px) scale(1)}
+  23%{transform:translate(150px,22px) scale(.82)}
+  28%{transform:translate(150px,22px) scale(1)}
+  45%{transform:translate(150px,22px) scale(1)}
+  63%{transform:translate(190px,92px) scale(1)}
+  68%{transform:translate(190px,92px) scale(.82)}
+  73%{transform:translate(190px,92px) scale(1)}
+  88%,100%{transform:translate(330px,110px) scale(1)}
+}
+
+/* Replay, bottom-right of the library. Smaller than the concept's chip, and it
+   only exists once the tour has been dismissed. */
+.tour-replay{position:fixed;right:20px;bottom:16px;z-index:40;font-weight:600;font-size:9px;letter-spacing:.12em;padding:6px 11px;background:var(--paper);color:var(--mut2);border:1px solid #C9C2B4;border-radius:2px;cursor:pointer;font-family:var(--mono);opacity:.72}
+.tour-replay:hover{opacity:1;color:var(--ox);border-color:var(--ox)}
+/* Returning visitors get it on the first frame, matching the modal's own
+   pre-paint guard, rather than popping in after hydration. */
+:root[data-tour="done"] .tour-replay{display:block}
+
+/* Loops only, per the handoff. The scrim's opacity fade stays, since a fade is
+   the standard reduced-motion-safe substitute for movement; what goes is the
+   modal's travel and everything that repeats forever. */
+@media (prefers-reduced-motion: reduce){
+  /* .tour-row.r0 is two classes, so a bare .tour-row here loses to it and the
+     flashes keep looping. Match the same specificity. */
+  .tour-dot,.tour-cursor,.tour-mdot,.tour-row.r0,.tour-row.r2{animation:none}
+  .tour-mrow{animation-delay:0s}
+  .tour-modal{animation:tour-fade .4s ease-out}
+  .tour-cursor{display:none}
+}
 
 /* Reset control */
 .reset-row{margin-top:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
