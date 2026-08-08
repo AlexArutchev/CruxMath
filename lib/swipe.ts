@@ -95,6 +95,10 @@ export function useDragToDismiss(opts: Opts) {
     if (!el) return;
 
     const start = (e: TouchEvent) => {
+      // Cleared before every decision below, so a declined gesture can never
+      // leave the previous one's start point behind for the next touchend to
+      // measure against.
+      drag.current = null;
       const t = e.touches[0];
       // A second finger mid-drag means a pinch or a scroll, not our gesture.
       if (!t || e.touches.length > 1) return;
@@ -186,16 +190,25 @@ export function useDragToDismiss(opts: Opts) {
       settle(el, !reduceMotion());
     };
 
+    // The browser took the gesture over, so there is no release to read an
+    // intent from. Put the sheet back rather than sharing touchend's handler,
+    // which would let a cancelled drag dismiss something the reader never let
+    // go of.
+    const cancel = () => {
+      drag.current = null;
+      settle(el, !reduceMotion());
+    };
+
     el.addEventListener("touchstart", start, { passive: true });
     el.addEventListener("touchmove", move, { passive: false });
     el.addEventListener("touchend", end);
-    el.addEventListener("touchcancel", end);
+    el.addEventListener("touchcancel", cancel);
 
     (el as HTMLElement & { _cruxDrag?: () => void })._cruxDrag = () => {
       el.removeEventListener("touchstart", start);
       el.removeEventListener("touchmove", move);
       el.removeEventListener("touchend", end);
-      el.removeEventListener("touchcancel", end);
+      el.removeEventListener("touchcancel", cancel);
     };
   }, []);
 }

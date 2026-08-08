@@ -712,6 +712,18 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
      chain into scrolling the page behind it, so the sheet follows the finger
      while the library slides underneath at the same time. */
   .lbody,.railwrap>.rail,.tour-modal{overscroll-behavior:contain}
+
+  /* Who owns a vertical drag on the ladder sheet.
+     The drawer and the tour card never needed this: both lock body scroll
+     while open, so the browser has nothing to pan and leaves the gesture
+     alone. The ladder deliberately does NOT lock it, because the statement
+     has to stay readable behind an open ladder. That leaves the page
+     scrollable, so the browser claims the drag as a page scroll and cancels
+     ours halfway through, which is why the sheet would not move. Declaring
+     the non-scrolling parts as ours settles it before the gesture starts.
+     .lbody stays pannable on purpose: inside the hint text, scrolling wins. */
+  .sheet-grab,.sheet-head,.lockline,.sheet-actions,.answer.answer-sheet{touch-action:none}
+  .lbody{touch-action:pan-y}
 }
 
 /* The desktop block parks the cursor at coordinates measured inside the wide
