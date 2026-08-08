@@ -164,9 +164,9 @@ export default function PrivacyPage() {
           we will remove it.
         </p>
         <p>
-          This shapes how the analytics are configured. Google Signals, ads personalisation
-          and all advertising features are switched off, so nothing collected here feeds ad
-          targeting or is joined to a Google account. The measurement that remains is
+          Google Signals, ads personalisation and all advertising features are switched
+          off, so nothing collected here feeds ad targeting or is joined to a Google
+          account. The measurement that remains is
           aggregate: page views, referrers, approximate country, device type. If you are a
           parent or guardian and would prefer your child not be measured at all, section 6
           explains how to block the tag.
