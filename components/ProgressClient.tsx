@@ -38,6 +38,10 @@ export default function ProgressClient({
   const [dlo, setDlo] = useState(DIFF_MIN);
   const [dhi, setDhi] = useState(DIFF_MAX);
   const [shown, setShown] = useState(LEDGER_PAGE);
+  // The topic chips plus the slider are most of a screen on a phone, sitting
+  // above rows nobody has read yet. Mobile folds them behind the summary chip
+  // and this opens them; desktop ignores it and shows the controls as before.
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Every medal ever earned counts here, lapsed or not. The 7-day expiry drives
   // the library tint (a nudge to revisit); a record of what you solved should
@@ -267,9 +271,18 @@ export default function ProgressClient({
       </div>
 
       {/* ---- ledger ---- */}
-      <div className="pg-ledger">
+      <div className="pg-ledger" data-filters={filtersOpen ? "open" : "closed"}>
         <div className="pg-filters">
           <span className="pg-label">SOLVED LEDGER</span>
+
+          {/* Mobile only: the whole filter state as one tappable summary. */}
+          <button
+            className="pg-fbtn mono"
+            aria-expanded={filtersOpen}
+            onClick={() => setFiltersOpen((v) => !v)}
+          >
+            {filterLabel} &#9662;
+          </button>
 
           <div className="pg-fgroup">
             <span className="pg-label" style={{ fontSize: 9.5 }}>

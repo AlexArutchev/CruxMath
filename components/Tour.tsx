@@ -176,6 +176,9 @@ export default function Tour() {
         aria-labelledby="tour-title"
         tabIndex={-1}
       >
+        {/* Mobile only: the modal docks to the bottom edge as a card, and the
+            handle is what says so before anyone tries to drag it. */}
+        <span className="tour-grab" aria-hidden="true" />
         <div className="tour-hd">
           <span className="tour-eyebrow">WELCOME TO CRUX MATH · {step} OF 2</span>
           <button className="tour-skip" onClick={close}>

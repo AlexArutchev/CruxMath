@@ -249,36 +249,18 @@ export default function SolveClient({
     ...(problem.tier ? [problem.tier.toUpperCase() + " TIER"] : []),
   ].join(" · ");
 
-  return (
-    <div className="stage">
-      <div className="col">
-        <div className="meta">
-          <span className="mono m m-loc">
-            {problem.contest.toUpperCase()} &middot; PROBLEM {problem.num}
-          </span>
-          <span className="mono m m-diff">DIFFICULTY {problem.difficulty ?? "?"} / 10</span>
-          <span className="mono m m-tags">{tagbits}</span>
-          {shownMedal && (
-            <span className={"solved-pill " + shownMedal}>
-              {shownMedal.toUpperCase()} &middot;{" "}
-              {medalLapses(shownMedal)
-                ? left + (left === 1 ? " DAY LEFT" : " DAYS LEFT")
-                : "PERMANENT"}
-            </span>
-          )}
-        </div>
-
-        <p className="stmt" dangerouslySetInnerHTML={{ __html: latexToHtml(problem.statement) }} />
-
-        {problem.figure_img && (
-          <figure>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="figimg" src={problem.figure_img} alt="Official contest figure" />
-            <div className="cap">Official figure, {problem.contest}.</div>
-          </figure>
-        )}
-
-        <div className="answer">
+  /**
+   * Rendered twice: once under the statement, once pinned inside the mobile
+   * ladder sheet, with CSS showing exactly one. Both read the same state so they
+   * cannot disagree, and `display:none` keeps the hidden copy out of the tab
+   * order and the accessibility tree. Choosing between them on a media-query
+   * hook instead would cost a re-render and a visible jump on every phone that
+   * loads the page.
+   */
+  function answerBlock(place: "col" | "sheet") {
+    return (
+      <>
+        <div className={"answer answer-" + place}>
           <span className="lbl">{answerLabel(answerKind)}</span>
 
           {choiceMode ? (
@@ -328,7 +310,7 @@ export default function SolveClient({
         </div>
 
         {(verdict || (solved && lastCost != null)) && (
-          <div className="verdict-row">
+          <div className={"verdict-row verdict-" + place}>
             {verdict && (
               <span className={"verdict " + (verdict.ok ? "ok" : "no")}>{verdict.text}</span>
             )}
@@ -340,6 +322,40 @@ export default function SolveClient({
             )}
           </div>
         )}
+      </>
+    );
+  }
+
+  return (
+    <div className="stage" data-solved={solved ? "1" : "0"}>
+      <div className="col">
+        <div className="meta">
+          <span className="mono m m-loc">
+            {problem.contest.toUpperCase()} &middot; PROBLEM {problem.num}
+          </span>
+          <span className="mono m m-diff">DIFFICULTY {problem.difficulty ?? "?"} / 10</span>
+          <span className="mono m m-tags">{tagbits}</span>
+          {shownMedal && (
+            <span className={"solved-pill " + shownMedal}>
+              {shownMedal.toUpperCase()} &middot;{" "}
+              {medalLapses(shownMedal)
+                ? left + (left === 1 ? " DAY LEFT" : " DAYS LEFT")
+                : "PERMANENT"}
+            </span>
+          )}
+        </div>
+
+        <p className="stmt" dangerouslySetInnerHTML={{ __html: latexToHtml(problem.statement) }} />
+
+        {problem.figure_img && (
+          <figure>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="figimg" src={problem.figure_img} alt="Official contest figure" />
+            <div className="cap">Official figure, {problem.contest}.</div>
+          </figure>
+        )}
+
+        {answerBlock("col")}
 
         {beatenByLock && (
           <div className="lock-note">
@@ -397,7 +413,9 @@ export default function SolveClient({
         onAsk={setPending}
         onConfirm={(idx) => void confirmRung(idx)}
         onCancel={() => setPending(0)}
-      />
+      >
+        {answerBlock("sheet")}
+      </HintLadder>
     </div>
   );
 }

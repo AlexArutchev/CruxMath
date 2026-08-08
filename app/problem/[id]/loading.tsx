@@ -40,7 +40,10 @@ export default function Loading() {
           </div>
         </div>
 
-        <aside>
+        {/* Named so the mobile rules can size it: at phone widths this is a
+            docked sheet, and it should stand in for the closed one the real
+            ladder loads into rather than four rungs' worth of bars. */}
+        <aside className="sk-aside">
           <div className="ltop">
             <span className="sk-bar" style={{ width: 96 }} />
             <span className="sk-bar" style={{ width: 110, animationDelay: ".05s" }} />
