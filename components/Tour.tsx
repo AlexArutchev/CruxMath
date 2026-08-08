@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSwipeDown } from "@/lib/swipe";
 
 export const TOUR_KEY = "crux.tourDone";
 
@@ -97,6 +98,11 @@ export default function Tour() {
     opener.current?.focus?.();
   }, []);
 
+  // On mobile the modal is a card sitting on the bottom edge, and the gesture
+  // that shape asks for is a downward flick. It dismisses exactly as SKIP does,
+  // so the tour is not shown again.
+  const swipe = useSwipeDown(close);
+
   // Escape closes, Tab stays inside. A modal that leaks focus to the filter
   // rail behind the scrim is worse than no modal.
   useEffect(() => {
@@ -175,6 +181,7 @@ export default function Tour() {
         aria-modal="true"
         aria-labelledby="tour-title"
         tabIndex={-1}
+        {...swipe}
       >
         {/* Mobile only: the modal docks to the bottom edge as a card, and the
             handle is what says so before anyone tries to drag it. */}

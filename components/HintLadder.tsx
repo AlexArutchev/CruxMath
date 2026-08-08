@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { latexInHtml } from "@/lib/latex";
+import { useSwipeDown } from "@/lib/swipe";
 import type { Rung } from "@/lib/types";
-
-/** Anything past this and the gesture was a swipe, not a tap that drifted. */
-const SWIPE_PX = 30;
 
 function toRoman(n: number): string {
   const vals: [number, string][] = [
@@ -77,9 +75,16 @@ export default function HintLadder({
 }) {
   const [open, setOpen] = useState(false);
   const [aside, setAside] = useState<HTMLElement | null>(null);
-  const touchY = useRef<number | null>(null);
 
   useSheetHeight(aside, open);
+
+  // Bound to the whole sheet below, not to the handle. Down puts it away, up
+  // expands it, and a drag that starts inside the scrolled ladder is left to
+  // the scroll it belongs to.
+  const swipe = useSwipeDown(
+    () => setOpen(false),
+    () => setOpen(true)
+  );
 
   const M = rungs.length;
 
@@ -88,20 +93,6 @@ export default function HintLadder({
   useEffect(() => {
     if (solved) setOpen(false);
   }, [solved]);
-
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    touchY.current = e.touches[0]?.clientY ?? null;
-  }, []);
-
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    const start = touchY.current;
-    touchY.current = null;
-    const end = e.changedTouches[0]?.clientY;
-    if (start == null || end == null) return;
-    const dy = end - start;
-    if (dy < -SWIPE_PX) setOpen(true);
-    else if (dy > SWIPE_PX) setOpen(false);
-  }, []);
 
   /** Grab handle plus the tappable title row. Mobile only; CSS hides it above the breakpoint. */
   function sheetHead(right: React.ReactNode) {
@@ -112,8 +103,6 @@ export default function HintLadder({
           className="sheet-head mono"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
         >
           <span className="sheet-title">HINT LADDER</span>
           <span className="sheet-meta">{right}</span>
@@ -124,7 +113,7 @@ export default function HintLadder({
 
   if (!M) {
     return (
-      <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
+      <aside ref={setAside} data-sheet={open ? "open" : "closed"} {...swipe}>
         {sheetHead("NOT YET AUTHORED")}
         <div className="ltop">
           <span className="ltitle">HINT LADDER</span>
@@ -153,7 +142,7 @@ export default function HintLadder({
   const hidden = romanRange(current + 1, M);
 
   return (
-    <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
+    <aside ref={setAside} data-sheet={open ? "open" : "closed"} {...swipe}>
       {sheetHead(
         solved ? (
           <>
