@@ -48,11 +48,14 @@ export default async function ProblemPage({
   // and metadata, but never the answer, the rung bodies, or the review.
   const { answer, ...safeProblem } = problem;
   const isChoice = !!answer && /^[A-E]$/i.test(answer.trim());
-  const isInteger = !!answer && /^d{1,3}$/.test(answer.trim());
+  // \d, not a literal "d". Without the escape this matched nothing an AIME
+  // answer could ever be, so every AIME problem fell through to "other" and its
+  // input asked phones for a full alphabetic keyboard instead of a number pad.
+  const isInteger = !!answer && /^\d{1,3}$/.test(answer.trim());
 
   return (
     <>
-      <Header />
+      <Header context={problem.contest.toUpperCase() + " · " + problem.num} />
       <SolveClient
         problem={safeProblem}
         answerKind={isChoice ? "choice" : isInteger ? "integer" : "other"}

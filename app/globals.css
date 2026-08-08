@@ -398,3 +398,345 @@ a.wordmark:hover{color:var(--ox)}
 .sk-meta{display:flex;gap:16px;margin-bottom:22px}
 .sk-aside-rung{border-top:1px solid var(--line);padding:16px 0 18px}
 .sk-aside-rung:last-of-type{border-bottom:1px solid var(--line)}
+
+/* ======================================================================
+   MOBILE SUITE — handoff turn 5a, drawn at 390px
+   ----------------------------------------------------------------------
+   Below 720px the Journal keeps its language and changes its furniture:
+   the ladder docks as a bottom sheet, the filter rail becomes a drawer,
+   Progress stacks, and the tour is a bottom card. Everything above that
+   width is the composition the handoff calls final, and is left alone.
+
+   The mobile-only elements are in the markup at every width, so they get
+   switched off here first. `display:none`, not visibility or opacity: it
+   takes them out of the tab order and the accessibility tree, which is
+   what makes it safe to render the answer row twice.
+   ====================================================================== */
+.hd-ctx,
+.sheet-grab,.sheet-head,.lockline,.sheet-actions,
+.mbar,.drawer-head,.drawer-foot,.drawer-scrim,
+.pg-fbtn,.tour-grab{display:none}
+.answer.answer-sheet,.verdict-row.verdict-sheet{display:none}
+
+/* CLEAR ALL is a <span> in the rail and a <button> in the drawer head, and the
+   button arrives with a UA border that reads as a boxed control. */
+button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding:0 0 2px}
+
+/* The rail is a grid item today; wrapping it for the drawer costs it the
+   stretch that painted its background and right border down the full page. */
+.railwrap{display:flex;flex-direction:column}
+.railwrap>.rail{flex:1}
+
+@keyframes sheet-rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+/* The desktop cursor loop, retuned for the narrower card, per the mock. */
+@keyframes tour-cursor-m{
+  0%{transform:translate(270px,96px) scale(1)}
+  18%{transform:translate(120px,18px) scale(1)}
+  23%{transform:translate(120px,18px) scale(.82)}
+  28%{transform:translate(120px,18px) scale(1)}
+  45%{transform:translate(120px,18px) scale(1)}
+  63%{transform:translate(150px,78px) scale(1)}
+  68%{transform:translate(150px,78px) scale(.82)}
+  73%{transform:translate(150px,78px) scale(1)}
+  88%,100%{transform:translate(270px,96px) scale(1)}
+}
+
+@media (max-width:719px){
+
+  /* ---- shell ---- */
+  header{padding:13px 20px}
+  .brand{gap:18px}
+  .wordmark{font-size:13px;letter-spacing:.18em}
+  .hd-ctx{display:block;font-weight:600;font-size:9.5px;letter-spacing:.1em;color:var(--mut)}
+  .site-foot{padding:16px 20px;gap:14px;flex-wrap:wrap}
+  .legal{padding:24px 20px 44px}
+  .legal h1{font-size:22px}
+  .legal p,.legal li{font-size:14px}
+
+  /* ---- solve: the reading column ---- */
+  .stage{display:block;min-height:0}
+  /* Reserve exactly the sheet's closed height, which HintLadder publishes. The
+     fallback covers the frame before it has measured. The footer needs the same
+     reserve or it sits under the sheet at the bottom of the scroll. */
+  .col{padding:16px 20px calc(var(--crux-sheet-h,210px) + 24px)}
+  body:has(.stage) .site-foot{padding-bottom:calc(var(--crux-sheet-h,210px) + 24px)}
+  .meta{gap:10px}
+  .meta .m{font-size:9px}
+  .m-loc{font-size:9.5px}
+  .stmt{font-size:15.5px;line-height:1.62;margin-top:12px}
+  figure{margin-top:16px}
+  .figimg{max-width:min(100%,300px)}
+  .review{margin-top:24px;padding-top:18px}
+  .rgrid{grid-template-columns:1fr;gap:12px}
+  .rcard{padding:14px 16px}
+  .rcard p{font-size:12.5px}
+  .reset-note,.aops-note{font-size:11.5px}
+  .lock-note{font-size:12.5px}
+
+  /* The answer lives in the sheet while the problem is open, and comes back
+     inline once it is solved and the sheet has become a status bar. */
+  .answer.answer-col,.verdict-row.verdict-col{display:none}
+  .answer.answer-sheet,.verdict-row.verdict-sheet{display:flex}
+  .stage[data-solved="1"] .answer.answer-col,
+  .stage[data-solved="1"] .verdict-row.verdict-col{display:flex}
+  .stage[data-solved="1"] .answer.answer-sheet,
+  .stage[data-solved="1"] .verdict-row.verdict-sheet{display:none}
+
+  /* ---- solve: the ladder as a bottom sheet ---- */
+  aside{
+    position:fixed;left:0;right:0;bottom:0;z-index:30;
+    /* Hard ceiling on the whole sheet, chrome included. The problem statement
+       is the thing being worked on, so the ladder never gets more than a bit
+       over half the screen and the rest stays visible behind it. .lbody is the
+       flexible part, so the ladder text absorbs the cap by scrolling. */
+    display:flex;flex-direction:column;max-height:58dvh;padding:0;
+    background:var(--panel);border-left:none;border-top:1px solid var(--line);
+    box-shadow:0 -14px 34px rgba(28,26,23,.14);
+  }
+  .sheet-grab{display:block;flex:none;width:36px;height:4px;border-radius:2px;background:#C9C2B4;margin:8px auto 0}
+  .sheet-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    flex:none;width:100%;min-height:38px;padding:10px 20px;
+    background:none;border:none;text-align:left;color:inherit;cursor:pointer;
+  }
+  .sheet-title{font-weight:600;font-size:10px;letter-spacing:.16em}
+  .sheet-meta{display:flex;gap:8px;font-weight:500;font-size:9.5px;letter-spacing:.06em;color:var(--mut)}
+  .sheet-spent{font-weight:600;color:var(--ox)}
+  .sheet-rest{font-weight:600;color:#A39B8B}
+  .ltop,.lintro,.lfoot{display:none}
+  .lbody{flex:1 1 auto;min-height:0;padding:0 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .rung{padding:12px 0 14px}
+  .rnum{width:16px;font-size:12px}
+  .rtitle{font-size:12.5px}
+  .rbody{margin-left:22px;font-size:12px}
+  .rbody svg{max-width:100%}
+  .confirm{padding:12px 14px}
+  .cbtn{padding:11px 16px}
+  .placeholder{margin:12px 0;padding:14px;font-size:12.5px}
+
+  /* Closed: the rung in play, and one line standing in for the rest.
+     Its own, tighter ceiling. A revealed rung runs several sentences, so a
+     collapsed sheet sized to its content grew to match the open one and buried
+     the problem. Capped here, the rung peeks and scrolls, and the sheet stays
+     a bar. .lbody keeps its own overflow so the cap lands on the text rather
+     than clipping the answer row off the bottom. */
+  aside[data-sheet="closed"]{max-height:36dvh}
+  aside[data-sheet="closed"] .rung{display:none}
+  aside[data-sheet="closed"] .rung.is-current{display:block}
+  aside[data-sheet="closed"] .lockline{display:flex}
+  /* Solved and closed: nothing but the status bar. */
+  .stage[data-solved="1"] aside[data-sheet="closed"] .rung{display:none}
+  .lockline{
+    align-items:baseline;gap:10px;opacity:.45;
+    border-top:1px solid #EFEBE0;padding:9px 0;
+    font-weight:600;font-size:9px;letter-spacing:.12em;color:var(--mut);
+  }
+  .lockline-n{font-family:var(--serif);font-weight:700;font-size:12px;letter-spacing:0;color:var(--dim)}
+
+  /* The route skeleton has no sheet head to hide behind, so its .ltop stands in
+     for one and it shows a single rung: the shape the real sheet loads into. */
+  .sk-aside .ltop{display:flex;padding:14px 20px 4px}
+  .sk-aside .sk-aside-rung{margin:0 20px;padding:12px 0 14px}
+  .sk-aside .sk-aside-rung:nth-of-type(n+2){display:none}
+
+  /* Answer bar, pinned to the sheet's bottom edge. 16px on the input is not a
+     taste call: anything smaller and iOS zooms the page on focus. */
+  .answer.answer-sheet{
+    flex:none;flex-wrap:wrap;align-items:center;gap:10px;margin:0;
+    padding:12px 20px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);background:var(--paper);
+  }
+  .answer.answer-sheet .lbl{display:none}
+  .answer.answer-sheet .ainput{flex:1;width:auto;min-width:0;padding:11px;font-size:16px}
+  .answer.answer-sheet .btn{padding:13px 22px}
+  .answer.answer-sheet .choices{flex:1 0 100%;gap:8px}
+  .answer.answer-sheet .cbox{flex:1;width:auto;height:44px}
+  /* Five choices and CHECK do not share a 390px line. Without :has the button
+     just wraps at its natural width, which still works. */
+  .answer.answer-sheet:has(.choices) .btn{flex:1 0 100%}
+  .verdict-row.verdict-sheet{flex:none;margin:0;padding:0 20px 12px;background:var(--paper)}
+
+  .sheet-actions{
+    display:flex;flex:none;gap:10px;
+    padding:10px 20px calc(14px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);
+  }
+  .sheet-act{
+    flex:1;padding:13px 0;text-align:center;border:1px solid #C9C2B4;border-radius:2px;
+    background:none;color:var(--mut2);text-decoration:none;cursor:pointer;
+    font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:.1em;
+  }
+  .sheet-act.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* ---- library ---- */
+  .wrap{display:block;min-height:0}
+  .mbar{display:block;padding:12px 20px 0;border-bottom:1px solid var(--line)}
+  .mbar .rsearch{font-size:16px}
+  .mchips{display:flex;gap:8px;padding:12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .mchips::-webkit-scrollbar{display:none}
+  .mfbtn,.mfchip{
+    flex:none;white-space:nowrap;padding:9px 12px;border-radius:2px;cursor:pointer;
+    font-weight:600;font-size:9.5px;letter-spacing:.06em;
+  }
+  .mfbtn{background:var(--ink);color:var(--paper);border:1px solid var(--ink)}
+  .mfchip{background:none;color:var(--mut2);border:1px solid #C9C2B4}
+
+  /* The rail becomes a drawer over a scrim. */
+  .railwrap{
+    position:fixed;inset:0;z-index:40;pointer-events:none;
+    display:flex;flex-direction:column;justify-content:flex-end;
+  }
+  .wrap[data-drawer="closed"] .railwrap{display:none}
+  .drawer-scrim{
+    display:block;flex:1;pointer-events:auto;padding:0;border:none;
+    background:rgba(28,26,23,.32);animation:tour-fade .25s ease-out;
+  }
+  .railwrap>.rail{
+    flex:none;pointer-events:auto;max-height:78dvh;overflow-y:auto;
+    gap:18px;padding:0 20px;
+    border-right:none;border-bottom:none;border-top:1px solid var(--line);
+    box-shadow:0 -14px 34px rgba(28,26,23,.18);
+    /* No entry animation. It animates `transform`, which is the same property
+       the drag writes, and CSS animations outrank inline styles: it overrode
+       the drag for its first third of a second and pinned the panel mid-pull
+       afterwards. The scrim's fade is enough to announce the drawer. */
+  }
+  .drawer-head{display:block;position:sticky;top:0;z-index:1;margin:0 -20px;padding:0 20px;background:var(--panel)}
+  .drawer-headrow{display:flex;align-items:baseline;justify-content:space-between;padding:10px 0 12px}
+  /* Search and CLEAR ALL both moved: search onto the page, CLEAR ALL into the
+     drawer head. Their rail copies would be duplicates down here. */
+  .rsearch-rail,.clear-rail{display:none}
+  .drawer-foot{
+    display:block;pointer-events:auto;background:var(--paper);
+    border-top:1px solid var(--line);
+    padding:12px 20px calc(16px + env(safe-area-inset-bottom));
+  }
+  .drawer-apply{
+    display:block;width:100%;padding:14px 0;border:none;border-radius:2px;
+    background:var(--ox);color:var(--paper);cursor:pointer;
+    font-weight:600;font-size:10px;letter-spacing:.12em;
+  }
+
+  /* Rows stack: source and difficulty, statement, then the tags. */
+  .listhd{padding:10px 20px}
+  .listhd .l,.listhd .r{font-size:9px}
+  .row{
+    grid-template-columns:1fr auto;
+    grid-template-areas:"src diff" "tex tex" "top tier";
+    gap:3px 10px;padding:11px 20px;
+    contain-intrinsic-size:auto 84px;
+  }
+  .r-c{grid-area:src}
+  .r-diff{grid-area:diff;justify-self:end}
+  .r-tex{grid-area:tex;height:24px;font-size:13px;line-height:24px}
+  .r-top{grid-area:top;font-size:8.5px}
+  .r-tier{grid-area:tier;justify-self:end;font-size:8.5px;color:#A39B8B}
+  .bar{width:32px}
+  .foot{padding:14px 20px 20px;font-size:9.5px}
+  .loadmore{padding:10px 22px;font-size:11px}
+
+  /* Skeletons mirror the stack: three bars, not five cells. The widths are
+     inline styles from the component, so overriding them needs !important. */
+  .row.sk-row{display:block;padding:13px 20px}
+  .sk-row>span{display:block;height:auto;margin-bottom:8px}
+  .sk-row>span:last-child{margin-bottom:0}
+  .sk-row>span:nth-child(4),.sk-row>span:nth-child(5){display:none}
+  .sk-row>span:nth-child(1) .sk-bar{width:38%!important;height:9px}
+  .sk-row>span:nth-child(3) .sk-bar{width:50%!important;height:8px}
+
+  /* ---- progress ---- */
+  .pg-band{flex-direction:column}
+  .pg-band .lead{padding:18px 20px 16px;border-right:none;border-bottom:1px solid var(--line)}
+  .pg-big{font-size:38px}
+  .pg-of{font-size:12px}
+  .pg-split{margin-top:12px;max-width:none}
+  .pg-band .counter{flex:1;padding:12px 14px}
+  .pg-num{font-size:22px}
+  .pg-cap{display:none}
+  .pg-label{font-size:9px;letter-spacing:.14em}
+
+  .pg-mid{grid-template-columns:1fr}
+  .pg-contests{padding:16px 20px;border-right:none;border-bottom:1px solid var(--line)}
+  .pg-crow{grid-template-columns:56px 1fr auto;gap:12px;padding:9px 0}
+  .pg-cname{font-size:10px}
+  .pg-csolved{font-size:13px}
+  .pg-ctotal{font-size:11px}
+  .pg-cbar{max-width:none}
+  .pg-ccounts{gap:8px;font-size:9.5px}
+  .pg-note{margin-top:10px;font-size:11.5px}
+  .pg-hist{padding:16px 20px}
+  .pg-bars{height:96px;gap:6px;max-width:none}
+  .pg-axis{gap:6px;max-width:none}
+  .pg-axis span{font-size:8.5px}
+
+  .pg-ledger{padding:16px 20px 26px}
+  .pg-filters{justify-content:space-between;gap:10px;margin-bottom:12px}
+  .pg-fbtn{
+    display:inline-flex;align-items:center;gap:6px;padding:8px 11px;
+    border:1px solid #C9C2B4;border-radius:2px;background:none;color:var(--mut2);cursor:pointer;
+    font-weight:600;font-size:9px;letter-spacing:.06em;
+  }
+  .pg-ledger[data-filters="closed"] .pg-fgroup{display:none}
+  .pg-ledger[data-filters="open"] .pg-fgroup{flex:1 0 100%}
+  .pg-matchbar{flex-wrap:wrap;gap:6px}
+  .pg-lrow{
+    grid-template-columns:auto 1fr auto auto;
+    grid-template-areas:"dot src diff meta" "tex tex tex tex";
+    gap:4px 9px;padding:10px 0;
+  }
+  .pg-lrow>.pg-dot{grid-area:dot}
+  /* The 900px rule drops these to keep a three-column row honest. The stack
+     has the room, so they come back. */
+  .pg-lrow .pg-ltex,.pg-lrow .pg-lmeta{display:block}
+  .pg-lsrc{grid-area:src;font-size:9.5px}
+  .pg-ltex{grid-area:tex;height:23px;margin-left:19px;font-size:12.5px;line-height:23px}
+  .pg-ldiff{grid-area:diff;font-size:10.5px}
+  .pg-lmeta{grid-area:meta;font-size:8.5px}
+
+  /* ---- first-visit tour, as a bottom card ---- */
+  .tour-scrim{align-items:flex-end;justify-content:stretch;padding:0}
+  .tour-modal{
+    width:100%;max-width:100%;max-height:88dvh;
+    border:none;border-top:1px solid #DCD6C8;
+    box-shadow:0 -18px 44px rgba(28,26,23,.3);
+    /* Same reason as the drawer: it is draggable, so nothing but the drag may
+       write transform. The scrim still fades in behind it. */
+    animation:tour-fade .35s ease-out;
+  }
+  .tour-grab{display:block;width:36px;height:4px;border-radius:2px;background:#C9C2B4;margin:8px auto 0}
+  .tour-hd,.tour-body{padding:12px 22px 0}
+  .tour-h{font-size:18px}
+  .tour-p{font-size:12.5px}
+  .tour-demo{padding:8px 10px}
+  .tour-row{gap:9px;padding:8px}
+  .tour-rsrc{font-size:8.5px}
+  .tour-rstmt{font-size:11px}
+  .tour-rdiff{font-size:9px}
+  .tour-cursor{animation-name:tour-cursor-m}
+  .tour-mname{width:50px;font-size:9px}
+  .tour-mcap{font-size:11.5px}
+  /* 44px minimum on everything thumb-sized. */
+  .tour-ft{padding:16px 22px calc(18px + env(safe-area-inset-bottom))}
+  .tour-back,.tour-next{min-height:44px;padding:13px 18px}
+  .tour-skip{display:inline-flex;align-items:center;min-height:44px}
+  .tour-replay{right:14px;bottom:12px;z-index:20;padding:9px 13px;font-size:9px}
+
+  /* A drag that starts at the top of a sheet's own scroll would otherwise
+     chain into scrolling the page behind it, so the sheet follows the finger
+     while the library slides underneath at the same time. */
+  .lbody,.railwrap>.rail,.tour-modal{overscroll-behavior:contain}
+
+  /* The drawer handle is a drag surface, so the browser must not read a pull
+     on it as a scroll of the filter list underneath. Nothing else claims a
+     gesture: the ladder is tap-only, and everywhere else scrolling wins. */
+  .drawer-head{touch-action:none}
+}
+
+/* The desktop block parks the cursor at coordinates measured inside the wide
+   card; the mobile card is narrower, so it needs its own resting stop. Sheets
+   and drawers lose their travel here for the same reason the modal does. */
+@media (max-width:719px) and (prefers-reduced-motion:reduce){
+  .tour-modal{animation:tour-fade .4s ease-out}
+  .tour-cursor{transform:translate(120px,19px)}
+  .railwrap>.rail,.drawer-scrim{animation:none}
+}

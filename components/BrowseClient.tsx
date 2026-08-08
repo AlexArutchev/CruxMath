@@ -5,6 +5,7 @@ import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { activeMedal, type Medal } from "@/lib/medal";
+import { useDragToDismiss } from "@/lib/swipe";
 import { MEDAL_ORDER } from "@/lib/progress";
 import {
   freshFilters,
@@ -249,11 +250,125 @@ export default function BrowseClient({
     [contests]
   );
 
+  // The rail does not fit beside a 390px list, so on mobile it moves into a
+  // bottom drawer and what stays on the page is this: one chip per live filter,
+  // each removable where it sits. Without them a phone shows a filtered list
+  // with no visible reason for the rows it is missing.
+  const [drawer, setDrawer] = useState(false);
+  const chips = useMemo(() => {
+    const out: { key: string; label: string; clear: () => void }[] = [];
+    const drop = <T,>(set: Set<T>, v: T): Set<T> => {
+      const next = new Set(set);
+      next.delete(v);
+      return next;
+    };
+    if (f.year.trim())
+      out.push({ key: "year", label: f.year.trim(), clear: () => patch({ year: "" }) });
+    if (f.type) out.push({ key: "type", label: f.type, clear: () => patch({ type: null }) });
+    for (const t of f.tiers)
+      out.push({
+        key: "tier:" + t,
+        label: t.toUpperCase(),
+        clear: () => patch({ tiers: drop(f.tiers, t) }),
+      });
+    if (f.hints !== "all")
+      out.push({
+        key: "hints",
+        label: HINTS.find((h) => h.key === f.hints)?.label ?? f.hints,
+        clear: () => patch({ hints: "all" }),
+      });
+    for (const m of f.medals)
+      out.push({
+        key: "medal:" + m,
+        label: m.toUpperCase(),
+        clear: () => patch({ medals: drop(f.medals, m) }),
+      });
+    for (const t of f.topics)
+      out.push({
+        key: "topic:" + t,
+        label: t.toUpperCase(),
+        clear: () => patch({ topics: drop(f.topics, t) }),
+      });
+    if (f.dlo > 1 || f.dhi < 10)
+      out.push({
+        key: "diff",
+        label: f.dlo + "–" + f.dhi,
+        clear: () => patch({ dlo: 1, dhi: 10 }),
+      });
+    return out;
+    // patch only wraps setF, which React keeps stable; f is the real input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [f]);
+
+  // Grabbable by its handle row only. The panel is wall to wall with chips,
+  // toggles and sliders, and dragging from anywhere on it meant a thumb
+  // reaching for a chip near the bottom edge started a drag and the whole
+  // drawer twitched under the press.
+  const drag = useDragToDismiss({
+    enabled: true,
+    onDismiss: () => setDrawer(false),
+    fromHandle: ".drawer-head",
+  });
+
+  // A drawer that leaves the list scrolling underneath it reads as a broken page.
+  useEffect(() => {
+    if (!drawer) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [drawer]);
+
   return (
-    <div className="wrap">
-      <div className="rail">
+    <div className="wrap" data-drawer={drawer ? "open" : "closed"}>
+      {/* Mobile only. Search stays on the page, per the handoff; everything else
+          goes behind FILTERS. */}
+      <div className="mbar">
         <input
           className="rsearch"
+          placeholder="Search statements…"
+          autoComplete="off"
+          value={f.q}
+          onChange={(e) => patch({ q: e.target.value })}
+        />
+        <div className="mchips">
+          <button className="mfbtn mono" onClick={() => setDrawer(true)}>
+            FILTERS{chips.length ? " · " + chips.length : ""}
+          </button>
+          {chips.map((c) => (
+            <button
+              key={c.key}
+              className="mfchip mono"
+              onClick={c.clear}
+              aria-label={"Remove filter " + c.label}
+            >
+              {c.label} &#10005;
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="railwrap">
+        {/* Scrim, mobile only. Tapping outside the drawer closes it. */}
+        <button
+          className="drawer-scrim"
+          aria-label="Close filters"
+          onClick={() => setDrawer(false)}
+        />
+      <div className="rail" ref={drag}>
+        <div className="drawer-head">
+          <span className="sheet-grab" aria-hidden="true" />
+          <div className="drawer-headrow">
+            <span className="mono ltitle">FILTERS</span>
+            <button className="clear mono" onClick={() => setF(freshFilters())}>
+              CLEAR ALL
+            </button>
+          </div>
+        </div>
+
+        <input
+          className="rsearch rsearch-rail"
           placeholder="Search statements…"
           autoComplete="off"
           value={f.q}
@@ -385,12 +500,23 @@ export default function BrowseClient({
           </div>
         </div>
 
-        <span className="clear" onClick={() => setF(freshFilters())}>
+        <span className="clear clear-rail" onClick={() => setF(freshFilters())}>
           CLEAR ALL
         </span>
       </div>
 
-      <div>
+        {/* Sticky in the drawer. The filters already applied live as they were
+            tapped, so this only reports the result and dismisses. */}
+        <div className="drawer-foot">
+          <button className="drawer-apply mono" onClick={() => setDrawer(false)}>
+            {loading
+              ? "SEARCHING…"
+              : "SHOW " + total + " PROBLEM" + (total === 1 ? "" : "S")}
+          </button>
+        </div>
+      </div>
+
+      <div className="listcol">
         <div className="listhd">
           <span className="l">
             {loading ? (
