@@ -485,7 +485,11 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
   /* ---- solve: the ladder as a bottom sheet ---- */
   aside{
     position:fixed;left:0;right:0;bottom:0;z-index:30;
-    display:flex;flex-direction:column;max-height:88dvh;padding:0;
+    /* Hard ceiling on the whole sheet, chrome included. The problem statement
+       is the thing being worked on, so the ladder never gets more than a bit
+       over half the screen and the rest stays visible behind it. .lbody is the
+       flexible part, so the ladder text absorbs the cap by scrolling. */
+    display:flex;flex-direction:column;max-height:58dvh;padding:0;
     background:var(--panel);border-left:none;border-top:1px solid var(--line);
     box-shadow:0 -14px 34px rgba(28,26,23,.14);
   }
@@ -510,14 +514,18 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
   .cbtn{padding:11px 16px}
   .placeholder{margin:12px 0;padding:14px;font-size:12.5px}
 
-  /* Closed: the rung in play, and one line standing in for the rest. */
-  aside[data-sheet="closed"] .lbody{overflow:visible}
+  /* Closed: the rung in play, and one line standing in for the rest.
+     Its own, tighter ceiling. A revealed rung runs several sentences, so a
+     collapsed sheet sized to its content grew to match the open one and buried
+     the problem. Capped here, the rung peeks and scrolls, and the sheet stays
+     a bar. .lbody keeps its own overflow so the cap lands on the text rather
+     than clipping the answer row off the bottom. */
+  aside[data-sheet="closed"]{max-height:36dvh}
   aside[data-sheet="closed"] .rung{display:none}
   aside[data-sheet="closed"] .rung.is-current{display:block}
   aside[data-sheet="closed"] .lockline{display:flex}
   /* Solved and closed: nothing but the status bar. */
   .stage[data-solved="1"] aside[data-sheet="closed"] .rung{display:none}
-  aside[data-sheet="open"] .lbody{max-height:56dvh}
   .lockline{
     align-items:baseline;gap:10px;opacity:.45;
     border-top:1px solid #EFEBE0;padding:9px 0;
@@ -588,7 +596,10 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
     gap:18px;padding:0 20px;
     border-right:none;border-bottom:none;border-top:1px solid var(--line);
     box-shadow:0 -14px 34px rgba(28,26,23,.18);
-    animation:sheet-rise .3s cubic-bezier(.22,1,.36,1);
+    /* No entry animation. It animates `transform`, which is the same property
+       the drag writes, and CSS animations outrank inline styles: it overrode
+       the drag for its first third of a second and pinned the panel mid-pull
+       afterwards. The scrim's fade is enough to announce the drawer. */
   }
   .drawer-head{display:block;position:sticky;top:0;z-index:1;margin:0 -20px;padding:0 20px;background:var(--panel)}
   .drawer-headrow{display:flex;align-items:baseline;justify-content:space-between;padding:10px 0 12px}
@@ -688,7 +699,9 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
     width:100%;max-width:100%;max-height:88dvh;
     border:none;border-top:1px solid #DCD6C8;
     box-shadow:0 -18px 44px rgba(28,26,23,.3);
-    animation:sheet-rise .4s cubic-bezier(.22,1,.36,1);
+    /* Same reason as the drawer: it is draggable, so nothing but the drag may
+       write transform. The scrim still fades in behind it. */
+    animation:tour-fade .35s ease-out;
   }
   .tour-grab{display:block;width:36px;height:4px;border-radius:2px;background:#C9C2B4;margin:8px auto 0}
   .tour-hd,.tour-body{padding:12px 22px 0}
@@ -713,17 +726,10 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
      while the library slides underneath at the same time. */
   .lbody,.railwrap>.rail,.tour-modal{overscroll-behavior:contain}
 
-  /* Who owns a vertical drag on the ladder sheet.
-     The drawer and the tour card never needed this: both lock body scroll
-     while open, so the browser has nothing to pan and leaves the gesture
-     alone. The ladder deliberately does NOT lock it, because the statement
-     has to stay readable behind an open ladder. That leaves the page
-     scrollable, so the browser claims the drag as a page scroll and cancels
-     ours halfway through, which is why the sheet would not move. Declaring
-     the non-scrolling parts as ours settles it before the gesture starts.
-     .lbody stays pannable on purpose: inside the hint text, scrolling wins. */
-  .sheet-grab,.sheet-head,.lockline,.sheet-actions,.answer.answer-sheet{touch-action:none}
-  .lbody{touch-action:pan-y}
+  /* The drawer handle is a drag surface, so the browser must not read a pull
+     on it as a scroll of the filter list underneath. Nothing else claims a
+     gesture: the ladder is tap-only, and everywhere else scrolling wins. */
+  .drawer-head{touch-action:none}
 }
 
 /* The desktop block parks the cursor at coordinates measured inside the wide

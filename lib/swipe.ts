@@ -5,8 +5,16 @@ import { useCallback, useRef } from "react";
 /** Only the mobile suite has sheets to drag; above this the layouts are docked. */
 const MOBILE = "(max-width: 719px)";
 
-/** Movement before we commit to an axis. Under this it is still a tap. */
-const AXIS_PX = 6;
+/**
+ * Movement before we commit to an axis. Under this it is still a tap.
+ * Deliberately loose: a thumb reaching for a chip at the bottom of a sheet
+ * rolls several pixels, and at 6px that read as a drag and made the panel
+ * twitch under every press.
+ */
+const AXIS_PX = 12;
+
+/** A press starting on one of these is aiming at the control, not the sheet. */
+const CONTROLS = "button, a, input, select, textarea, label, [role='button']";
 
 /** A flick this fast dismisses even if it never travelled far. */
 const FLICK_PX_PER_MS = 0.45;
@@ -19,6 +27,13 @@ type Opts = {
   onExpand?: () => void;
   /** How far down the sheet may travel. Defaults to its own height. */
   maxTravel?: (el: HTMLElement) => number;
+  /**
+   * Selector for the part of the sheet that is the grab surface. Omit and the
+   * whole sheet drags, which only suits a sheet whose body is mostly reading
+   * material. A panel full of filters needs the handle, or every press near a
+   * chip starts a drag.
+   */
+  fromHandle?: string;
 };
 
 type Drag = {
@@ -54,12 +69,17 @@ function reduceMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Put the sheet back where it belongs, optionally easing there. */
+/**
+ * Put the sheet back where it belongs, optionally easing there.
+ *
+ * Writes an explicit zero rather than clearing the property. Clearing hands the
+ * transform back to the cascade, and a sheet that also carries a CSS entry
+ * animation ends up pinned wherever that animation last computed, so a drag
+ * released short of the threshold stuck mid-pull instead of returning.
+ */
 function settle(el: HTMLElement, animate: boolean) {
   el.style.transition = animate ? "transform .22s cubic-bezier(.22,1,.36,1)" : "none";
-  el.style.transform = "";
-  // Hand the entry animation back for the next time the sheet is opened.
-  el.style.animation = "";
+  el.style.transform = "translateY(0px)";
 }
 
 /**
@@ -105,6 +125,11 @@ export function useDragToDismiss(opts: Opts) {
       if (!window.matchMedia(MOBILE).matches) return;
       if (insideScrolledContent(e.target, el)) return;
 
+      const target = e.target as HTMLElement | null;
+      const handle = cfg.current.fromHandle;
+      if (handle && !target?.closest?.(handle)) return;
+      if (target?.closest?.(CONTROLS)) return;
+
       const max = cfg.current.maxTravel?.(el) ?? el.offsetHeight;
       drag.current = {
         x: t.clientX,
@@ -120,7 +145,12 @@ export function useDragToDismiss(opts: Opts) {
       // Grab a sheet within the third of a second its entry animation runs and
       // the animation keeps winning over the inline transform, so the drag has
       // no visible effect. Whoever is already touching it has seen it arrive.
-      el.style.animation = "none";
+      // Cancelled rather than overridden with `animation: none`: clearing that
+      // inline value afterwards counts as the animation being applied afresh,
+      // so the drawer replayed its slide-in every time a gesture settled. A
+      // cancelled animation stays cancelled and restarts on its own when the
+      // sheet is displayed again.
+      el.getAnimations?.().forEach((a) => a.cancel());
     };
 
     const move = (e: TouchEvent) => {

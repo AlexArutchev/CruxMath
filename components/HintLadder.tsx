@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { latexInHtml } from "@/lib/latex";
-import { useDragToDismiss } from "@/lib/swipe";
 import type { Rung } from "@/lib/types";
 
 function toRoman(n: number): string {
@@ -78,35 +77,6 @@ export default function HintLadder({
 
   useSheetHeight(asideEl, open);
 
-  const drag = useDragToDismiss({
-    // Only an expanded sheet has anywhere to go. Collapsed, it IS the answer
-    // bar, so dragging it down would pull the CHECK button off the screen.
-    enabled: open,
-    onDismiss: () => setOpen(false),
-    // Dropped once open, so an upward drag inside the ladder scrolls it rather
-    // than being eaten by an expand that has already happened.
-    onExpand: open ? undefined : () => setOpen(true),
-    // Stop at the point where only the collapsed sheet is left, rather than
-    // sliding the whole panel off and showing a strip of page under it.
-    maxTravel: (el) => {
-      const closed = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue("--crux-sheet-h")
-      );
-      const cap = el.offsetHeight - (Number.isFinite(closed) ? closed : 0);
-      return Math.max(120, cap);
-    },
-  });
-
-  // One ref, two jobs: the element is measured for the column's bottom padding
-  // and is also the drag surface.
-  const setAside = useCallback(
-    (el: HTMLElement | null) => {
-      setAsideEl(el);
-      drag(el);
-    },
-    [drag]
-  );
-
   const M = rungs.length;
 
   // Solving is done, so the sheet stops competing with the review layer for the
@@ -115,26 +85,32 @@ export default function HintLadder({
     if (solved) setOpen(false);
   }, [solved]);
 
-  /** Grab handle plus the tappable title row. Mobile only; CSS hides it above the breakpoint. */
+  /**
+   * The sheet's title row, and the whole of its open/close control. Mobile
+   * only; CSS hides it above the breakpoint.
+   *
+   * No grab handle and no drag: the ladder is the one sheet that leaves the
+   * page scrollable behind it, so the browser claims vertical drags on it as
+   * page scrolls and cancels the gesture halfway. Rather than fight that, the
+   * row is a plain tap target and says so. A grabber here would advertise a
+   * gesture that does not exist.
+   */
   function sheetHead(right: React.ReactNode) {
     return (
-      <>
-        <span className="sheet-grab" aria-hidden="true" />
-        <button
-          className="sheet-head mono"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="sheet-title">HINT LADDER</span>
-          <span className="sheet-meta">{right}</span>
-        </button>
-      </>
+      <button
+        className="sheet-head mono"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="sheet-title">HINT LADDER</span>
+        <span className="sheet-meta">{right}</span>
+      </button>
     );
   }
 
   if (!M) {
     return (
-      <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
+      <aside ref={setAsideEl} data-sheet={open ? "open" : "closed"}>
         {sheetHead("NOT YET AUTHORED")}
         <div className="ltop">
           <span className="ltitle">HINT LADDER</span>
@@ -163,7 +139,7 @@ export default function HintLadder({
   const hidden = romanRange(current + 1, M);
 
   return (
-    <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
+    <aside ref={setAsideEl} data-sheet={open ? "open" : "closed"}>
       {sheetHead(
         solved ? (
           <>
@@ -172,7 +148,7 @@ export default function HintLadder({
           </>
         ) : (
           <>
-            {revealed} OF {M} &middot; {open ? "TAP TO CLOSE" : "SWIPE UP"}
+            {revealed} OF {M} &middot; {open ? "TAP TO CLOSE ▾" : "TAP TO OPEN ▴"}
           </>
         )
       )}

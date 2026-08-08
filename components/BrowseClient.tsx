@@ -300,10 +300,15 @@ export default function BrowseClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f]);
 
-  // Bound to the drawer panel itself, so the drag is available anywhere on it
-  // rather than only on the handle. There is nothing above the drawer to
-  // expand into, so it only listens downward.
-  const drag = useDragToDismiss({ enabled: true, onDismiss: () => setDrawer(false) });
+  // Grabbable by its handle row only. The panel is wall to wall with chips,
+  // toggles and sliders, and dragging from anywhere on it meant a thumb
+  // reaching for a chip near the bottom edge started a drag and the whole
+  // drawer twitched under the press.
+  const drag = useDragToDismiss({
+    enabled: true,
+    onDismiss: () => setDrawer(false),
+    fromHandle: ".drawer-head",
+  });
 
   // A drawer that leaves the list scrolling underneath it reads as a broken page.
   useEffect(() => {
