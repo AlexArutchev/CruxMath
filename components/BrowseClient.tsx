@@ -5,7 +5,7 @@ import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { activeMedal, type Medal } from "@/lib/medal";
-import { useSwipeDown } from "@/lib/swipe";
+import { useDragToDismiss } from "@/lib/swipe";
 import { MEDAL_ORDER } from "@/lib/progress";
 import {
   freshFilters,
@@ -300,10 +300,10 @@ export default function BrowseClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [f]);
 
-  // Bound to the drawer panel itself, so the gesture is available anywhere on
-  // it rather than only on the handle. There is nothing above the drawer to
+  // Bound to the drawer panel itself, so the drag is available anywhere on it
+  // rather than only on the handle. There is nothing above the drawer to
   // expand into, so it only listens downward.
-  const swipe = useSwipeDown(() => setDrawer(false));
+  const drag = useDragToDismiss({ enabled: true, onDismiss: () => setDrawer(false) });
 
   // A drawer that leaves the list scrolling underneath it reads as a broken page.
   useEffect(() => {
@@ -351,7 +351,7 @@ export default function BrowseClient({
           aria-label="Close filters"
           onClick={() => setDrawer(false)}
         />
-      <div className="rail" {...swipe}>
+      <div className="rail" ref={drag}>
         <div className="drawer-head">
           <span className="sheet-grab" aria-hidden="true" />
           <div className="drawer-headrow">

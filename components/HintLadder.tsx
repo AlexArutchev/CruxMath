@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { latexInHtml } from "@/lib/latex";
-import { useSwipeDown } from "@/lib/swipe";
+import { useDragToDismiss } from "@/lib/swipe";
 import type { Rung } from "@/lib/types";
 
 function toRoman(n: number): string {
@@ -74,16 +74,37 @@ export default function HintLadder({
   children?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
-  const [aside, setAside] = useState<HTMLElement | null>(null);
+  const [asideEl, setAsideEl] = useState<HTMLElement | null>(null);
 
-  useSheetHeight(aside, open);
+  useSheetHeight(asideEl, open);
 
-  // Bound to the whole sheet below, not to the handle. Down puts it away, up
-  // expands it, and a drag that starts inside the scrolled ladder is left to
-  // the scroll it belongs to.
-  const swipe = useSwipeDown(
-    () => setOpen(false),
-    () => setOpen(true)
+  const drag = useDragToDismiss({
+    // Only an expanded sheet has anywhere to go. Collapsed, it IS the answer
+    // bar, so dragging it down would pull the CHECK button off the screen.
+    enabled: open,
+    onDismiss: () => setOpen(false),
+    // Dropped once open, so an upward drag inside the ladder scrolls it rather
+    // than being eaten by an expand that has already happened.
+    onExpand: open ? undefined : () => setOpen(true),
+    // Stop at the point where only the collapsed sheet is left, rather than
+    // sliding the whole panel off and showing a strip of page under it.
+    maxTravel: (el) => {
+      const closed = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--crux-sheet-h")
+      );
+      const cap = el.offsetHeight - (Number.isFinite(closed) ? closed : 0);
+      return Math.max(120, cap);
+    },
+  });
+
+  // One ref, two jobs: the element is measured for the column's bottom padding
+  // and is also the drag surface.
+  const setAside = useCallback(
+    (el: HTMLElement | null) => {
+      setAsideEl(el);
+      drag(el);
+    },
+    [drag]
   );
 
   const M = rungs.length;
@@ -113,7 +134,7 @@ export default function HintLadder({
 
   if (!M) {
     return (
-      <aside ref={setAside} data-sheet={open ? "open" : "closed"} {...swipe}>
+      <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
         {sheetHead("NOT YET AUTHORED")}
         <div className="ltop">
           <span className="ltitle">HINT LADDER</span>
@@ -142,7 +163,7 @@ export default function HintLadder({
   const hidden = romanRange(current + 1, M);
 
   return (
-    <aside ref={setAside} data-sheet={open ? "open" : "closed"} {...swipe}>
+    <aside ref={setAside} data-sheet={open ? "open" : "closed"}>
       {sheetHead(
         solved ? (
           <>

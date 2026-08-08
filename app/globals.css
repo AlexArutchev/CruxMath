@@ -707,6 +707,11 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
   .tour-back,.tour-next{min-height:44px;padding:13px 18px}
   .tour-skip{display:inline-flex;align-items:center;min-height:44px}
   .tour-replay{right:14px;bottom:12px;z-index:20;padding:9px 13px;font-size:9px}
+
+  /* A drag that starts at the top of a sheet's own scroll would otherwise
+     chain into scrolling the page behind it, so the sheet follows the finger
+     while the library slides underneath at the same time. */
+  .lbody,.railwrap>.rail,.tour-modal{overscroll-behavior:contain}
 }
 
 /* The desktop block parks the cursor at coordinates measured inside the wide

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSwipeDown } from "@/lib/swipe";
+import { useDragToDismiss } from "@/lib/swipe";
 
 export const TOUR_KEY = "crux.tourDone";
 
@@ -65,7 +65,7 @@ export default function Tour() {
   // blocking script above, which hides it until the effect below unmounts it.
   const [open, setOpen] = useState(true);
   const [step, setStep] = useState<1 | 2>(1);
-  const modal = useRef<HTMLDivElement>(null);
+  const modal = useRef<HTMLDivElement | null>(null);
   const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -101,7 +101,17 @@ export default function Tour() {
   // On mobile the modal is a card sitting on the bottom edge, and the gesture
   // that shape asks for is a downward flick. It dismisses exactly as SKIP does,
   // so the tour is not shown again.
-  const swipe = useSwipeDown(close);
+  const drag = useDragToDismiss({ enabled: true, onDismiss: close });
+
+  // One ref, two jobs: the focus trap reads the card, and the card is also the
+  // drag surface.
+  const setModal = useCallback(
+    (el: HTMLDivElement | null) => {
+      modal.current = el;
+      drag(el);
+    },
+    [drag]
+  );
 
   // Escape closes, Tab stays inside. A modal that leaks focus to the filter
   // rail behind the scrim is worse than no modal.
@@ -176,12 +186,11 @@ export default function Tour() {
     >
       <div
         className="tour-modal"
-        ref={modal}
+        ref={setModal}
         role="dialog"
         aria-modal="true"
         aria-labelledby="tour-title"
         tabIndex={-1}
-        {...swipe}
       >
         {/* Mobile only: the modal docks to the bottom edge as a card, and the
             handle is what says so before anyone tries to drag it. */}
