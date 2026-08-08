@@ -4,7 +4,7 @@ export const metadata = { title: "Privacy Policy" };
 
 // One place to change the address that appears throughout the policy.
 const CONTACT_EMAIL = "support@cruxmath.com";
-const LAST_UPDATED = "August 6, 2026";
+const LAST_UPDATED = "August 7, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -40,9 +40,14 @@ export default function PrivacyPage() {
             Neither is sent anywhere.
           </li>
           <li>
-            <strong>Anonymous usage statistics.</strong> We use Vercel Analytics, which is
-            cookieless and does not track you across sites. It reports aggregate figures such
-            as page views.
+            <strong>Anonymous usage statistics.</strong> We use two analytics services.
+            Vercel Analytics is cookieless and does not track you across sites. Google
+            Analytics sets cookies in your browser (see section 3) and tells us things
+            like which pages are read, how long people stay, which site or link sent
+            them, and roughly which country and device type they used. Neither is given
+            your name or your practice record, and neither is used to build an advertising
+            profile of you: advertising features and Google Signals are switched off, both
+            in our settings and in the code that loads the tag.
           </li>
         </ul>
         <p>
@@ -58,18 +63,40 @@ export default function PrivacyPage() {
           happens inside Vercel and Supabase. We do not store it in the application, do not
           use it to build a profile of you, and do not combine it with your practice record.
         </p>
+        <p>
+          Google Analytics also receives your IP address and user-agent, because your
+          browser contacts Google directly to load it. Google uses the IP address to
+          estimate your country and does not share it back to us; we only ever see
+          aggregate reports. If you would rather Google not receive it at all, section 6
+          explains how to stop the tag from loading.
+        </p>
 
         <h2>3. Cookies</h2>
         <p>
-          CruxMath sets no advertising or cross-site tracking cookies. Vercel Analytics is
-          cookieless. The only client-side storage we use is the local storage and session
-          storage described in section 1.
+          CruxMath sets no advertising cookies, and nothing here is used to follow you
+          around other websites.
+        </p>
+        <p>
+          Google Analytics sets two first-party cookies in your browser, normally named{" "}
+          <code>_ga</code> and <code>_ga_</code> followed by our measurement ID. They hold a
+          randomly generated number that lets Google tell a returning visit from a new one,
+          so that &ldquo;120 visits&rdquo; is not reported as 120 different people. They
+          carry nothing about who you are, they are readable only on this site, and
+          advertising features that would extend them across other sites are turned off.
+          Vercel Analytics remains cookieless. Other than these, the only client-side
+          storage we use is the local storage and session storage described in section 1.
         </p>
 
         <h2>4. Third-party services</h2>
         <ul>
           <li>
             <strong>Vercel</strong> hosts the site and provides the cookieless analytics.
+          </li>
+          <li>
+            <strong>Google Analytics</strong> provides the more detailed usage statistics
+            described in section 1. Your browser loads it from{" "}
+            <code>googletagmanager.com</code>, so Google sees the request. Advertising
+            features, Google Signals and ads personalisation are disabled.
           </li>
           <li>
             <strong>Supabase</strong> provides the database that holds problems, hint ladders,
@@ -84,8 +111,9 @@ export default function PrivacyPage() {
         </ul>
 
         <p>
-          Fonts are served from CruxMath itself rather than from a font CDN, so no third
-          party is contacted to render the page.
+          Fonts are served from CruxMath itself rather than from a font CDN, so nothing
+          needed to <em>render</em> the page comes from a third party. The analytics tag
+          above is the exception, and it loads after the page is already usable.
         </p>
 
         <h2>5. How long we keep it</h2>
@@ -96,7 +124,9 @@ export default function PrivacyPage() {
             reach it, since the ID that pointed at it is gone.
           </li>
           <li>
-            <strong>Analytics</strong> are retained according to Vercel&rsquo;s own policy.
+            <strong>Analytics</strong> are retained according to each provider&rsquo;s own
+            policy. For Google Analytics we set the shortest retention Google offers for
+            visitor-level data, after which only aggregate reports remain.
           </li>
         </ul>
 
@@ -112,6 +142,13 @@ export default function PrivacyPage() {
             browser, under the local storage key <code>cruxmath-auth</code>.
           </li>
           <li>
+            You can stop Google Analytics from loading. Google publishes an official
+            browser opt-out add-on, and any content blocker or a browser with tracking
+            protection on will block the tag. Clearing site data also deletes the{" "}
+            <code>_ga</code> cookies. Blocking it changes nothing about how the site
+            works: the problems, the ladders and your progress all behave the same.
+          </li>
+          <li>
             Depending on where you live you may also have rights to access or correct your
             data, or to complain to a data protection authority.
           </li>
@@ -125,6 +162,14 @@ export default function PrivacyPage() {
           knowingly collect personal information from anyone, children included. If you
           believe a child has provided personal information through this site, contact us and
           we will remove it.
+        </p>
+        <p>
+          This shapes how the analytics are configured. Google Signals, ads personalisation
+          and all advertising features are switched off, so nothing collected here feeds ad
+          targeting or is joined to a Google account. The measurement that remains is
+          aggregate: page views, referrers, approximate country, device type. If you are a
+          parent or guardian and would prefer your child not be measured at all, section 6
+          explains how to block the tag.
         </p>
 
         <h2>8. Changes</h2>

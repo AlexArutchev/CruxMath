@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "katex/dist/katex.min.css";
@@ -6,8 +7,21 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import { TOUR_NOFLASH } from "@/components/Tour";
 
-// Self-hosted at build time: no render-blocking request to a third party, and
-// no visitor IP handed to Google on every page load.
+/**
+ * Google Analytics 4. Read from the environment rather than hardcoded: this
+ * repo is public, and a baked-in measurement ID means every fork someone
+ * deploys reports into the same property. Unset, the tag is not rendered at
+ * all, so a clone runs with no analytics rather than with someone else's.
+ *
+ * Set NEXT_PUBLIC_GA_ID in Vercel's project settings for it to run in
+ * production. See .env.example.
+ */
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
+// Self-hosted at build time, so rendering a page still contacts no third party
+// and costs no render-blocking request. Google does see visitors now, but
+// through the analytics tag below, not through a font fetch on the critical
+// path.
 const serif = Source_Serif_4({
   subsets: ["latin"],
   style: ["normal", "italic"],
@@ -60,6 +74,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Footer />
         <Analytics />
+
+        {/* Google's own snippet asks for this immediately after <head>. App
+            Router has no head to paste into, so next/script places it and
+            defers it past hydration, which keeps a third-party request off the
+            critical path. One tag, rendered once by the root layout.
+
+            The two `allow_*` flags are deliberate. This is a study tool for
+            contests that under-13s sit, so Google Signals and ads
+            personalisation are refused at the tag rather than only in the
+            admin console, and the privacy policy says so. They also have to
+            stay off in GA's own settings; the flags here are the belt, not the
+            braces. */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}', {
+  allow_google_signals: false,
+  allow_ad_personalization_signals: false
+});`}
+            </Script>
+          </>
+        )}
       </body>
     </html>
   );
