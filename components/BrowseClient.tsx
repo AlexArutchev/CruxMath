@@ -155,7 +155,14 @@ export default function BrowseClient({
     if (f.dlo > 1) query = query.gte("difficulty", f.dlo);
     if (f.dhi < 10) query = query.lte("difficulty", f.dhi);
 
-    return query.order("difficulty", { ascending: true }).order("id", { ascending: true });
+    // Newest contest first. Contest strings lead with the year ('2024 AIME I'),
+    // so a plain descending sort puts the most recent sitting on top, which is
+    // what someone opening the library is looking for. Ordering by difficulty
+    // instead buried this year's problems under a decade of easy ones.
+    //
+    // (contest, num) is unique in the schema, so this is a total order and the
+    // range() paging below cannot repeat or skip a row between pages.
+    return query.order("contest", { ascending: false }).order("num", { ascending: true });
   }, [debouncedQ, f.year, f.type, f.tiers, f.topics, f.hints, medalIds, f.dlo, f.dhi]);
 
   useEffect(() => {
