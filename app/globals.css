@@ -13,12 +13,36 @@
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif)}
   .mono{font-family:var(--mono)}
   a{color:var(--ox);text-decoration:none}
-  /* Exactly 1em, not a hair over. A fractional scale lands KaTeX's glyph metrics
-     between device pixels, and the two ~1px bars of an equals sign then rasterise
-     unevenly: the top bar sits on a pixel row and the bottom one straddles two,
-     which reads as faint. Any size that leaves the bars on whole pixels is fine;
-     1.03 was not one of them. */
+  /* Math takes the size of the prose around it. Exactly 1em, since a fractional
+     scale only compounds the rasterisation problem described below. */
   .katex{font-size:1em}
+
+  /* KaTeX_Main draws `=` as two bars well under a device pixel tall at our text
+     sizes. On a 1x display each bar rounds to whatever fraction of a pixel row it
+     happens to overlap, and the two rarely round the same way. Ink coverage of the
+     upper and lower bar, measured off the real webfont, on a scale of 0 to 1:
+
+       13px (rung body)  0.75 / 0.10   <- the reported faint bottom line
+       15px              0.60 / 0.60
+       16px              0.75 / 0.75
+       18px              0.60 / 0.60
+       19px (statement)  0.89 / 0.33   <- same defect, milder
+
+     This was never a colour problem. At 13px there is no ink in the lower bar to
+     darken, which is why giving math full --ink fixed the plus and minus signs,
+     both single bars, and left the equals sign alone. Only size moves it, and only
+     some sizes land the two bars alike, so these are exact pixel values rather
+     than a ratio: an em would drift back onto a bad size the moment the prose
+     around it changed.
+
+     Scoped to 1x, because that is the only place the defect exists. At 2x and up
+     each bar covers two or more device pixels and renders evenly, so phones and
+     retina screens keep math sized to their own prose. Most of the traffic here is
+     mobile, and enlarging math there would be a regression that fixes nothing. */
+  @media (max-resolution:1.5dppx){
+    .stmt .katex{font-size:18px}
+    .rbody .katex{font-size:15px}
+  }
   header{display:flex;align-items:baseline;justify-content:space-between;padding:16px 36px;border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:baseline;gap:26px}
   .wordmark{font-weight:700;font-size:15px;letter-spacing:.2em}
