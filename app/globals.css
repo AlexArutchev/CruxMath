@@ -38,14 +38,24 @@
      Scoped to 1x, because that is the only place the defect exists. At 2x and up
      each bar covers two or more device pixels and renders evenly, so phones and
      retina screens keep math sized to their own prose. Most of the traffic here is
-     mobile, and enlarging math there would be a regression that fixes nothing. */
+     mobile, and enlarging math there would be a regression that fixes nothing.
+
+     Only the rung body is corrected. The statement was tried at 18px and the
+     cure was worse: its prose is 19px, so the maths came out a pixel smaller
+     than the words around it, which is far more noticeable than the uneven bar
+     it was fixing. 0.89 against 0.33 is a hairline difference; 0.75 against
+     0.10 is a missing stroke. Only the second one is worth paying for. */
   @media (max-resolution:1.5dppx){
-    .stmt .katex{font-size:18px}
     .rbody .katex{font-size:15px}
   }
   header{display:flex;align-items:baseline;justify-content:space-between;padding:16px 36px;border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:baseline;gap:26px}
+  /* Base colour already comes from `a.wordmark{color:inherit}` further down,
+     which outranks the bare `a` rule above, so the name sits in ink and always
+     did. The accent is spent on CRUX alone, the half of the name that carries
+     the idea. The span wins on class count, so no !important is needed. */
   .wordmark{font-weight:700;font-size:15px;letter-spacing:.2em}
+  .wordmark .wm-crux{color:var(--ox)}
   .nav{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut)}
   .nav.on{color:var(--ox);border-bottom:1px solid var(--ox);padding-bottom:2px}
   .kbd{font-weight:500;font-size:10px;color:var(--mut);border:1px solid #DCD6C8;padding:3px 8px;border-radius:2px}
