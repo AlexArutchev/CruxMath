@@ -55,9 +55,16 @@
   .rhead{display:flex;gap:12px;align-items:baseline}
   .rnum{font-weight:700;font-size:13px;color:var(--ox);width:18px;flex:none}
   .rnum.lk{color:var(--dim)}
-  .rtitle{font-weight:600;font-size:14.5px;line-height:1.4}
-  .rbody{font-weight:400;font-size:13px;line-height:1.62;color:var(--mut3);margin:10px 0 0 30px}
+  /* min-width:0 because .rhead is a flex row and a flex item will not shrink
+     below its own content by default. A title carrying KaTeX, which never
+     wraps, would otherwise widen the whole rung. */
+  .rtitle{font-weight:600;font-size:14.5px;line-height:1.4;min-width:0;overflow-wrap:break-word}
+  .rbody{font-weight:400;font-size:13px;line-height:1.62;color:var(--mut3);margin:10px 0 0 30px;overflow-wrap:break-word}
   .rbody svg{display:block;max-width:270px;margin-top:12px}
+  /* A display equation is one unbreakable line, so a long one ran past the rung
+     and off the screen. It scrolls inside its own box now instead of dragging
+     the layout with it. The padding keeps the scrollbar clear of the glyphs. */
+  .rbody .katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden;padding-bottom:4px}
   .tease{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut);flex:1;font-family:var(--mono)}
   .reveal{font-weight:600;font-size:10px;letter-spacing:.1em;color:var(--ox);background:none;border:none;border-bottom:1px solid #D9BCB4;padding:0 0 2px;cursor:pointer;font-family:var(--mono)}
   .rung.far{opacity:.55}
@@ -235,7 +242,10 @@ a.row{text-decoration:none;color:inherit}
 .tour-sdot.on{background:var(--ox)}
 .tour-btns{display:flex;gap:10px}
 .tour-back{font-weight:600;font-size:10px;letter-spacing:.1em;padding:9px 16px;background:none;color:var(--mut2);border:1px solid #C9C2B4;border-radius:2px;cursor:pointer;font-family:var(--mono)}
-.tour-next{font-weight:600;font-size:10px;letter-spacing:.12em;padding:9px 18px;background:var(--ox);color:var(--paper);border:none;border-radius:2px;cursor:pointer;font-family:var(--mono)}
+/* Step 1 renders this as a button, step 2 as a link to the first problem. The
+   flex display is what keeps the two identical: an anchor will not centre its
+   text inside the 44px mobile tap target on its own. */
+.tour-next{display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;letter-spacing:.12em;padding:9px 18px;background:var(--ox);color:var(--paper);border:none;border-radius:2px;cursor:pointer;font-family:var(--mono)}
 
 @keyframes tour-fade{from{opacity:0}to{opacity:1}}
 @keyframes tour-rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
@@ -504,7 +514,10 @@ button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding
   .sheet-spent{font-weight:600;color:var(--ox)}
   .sheet-rest{font-weight:600;color:#A39B8B}
   .ltop,.lintro,.lfoot{display:none}
-  .lbody{flex:1 1 auto;min-height:0;padding:0 20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  /* overflow-x:hidden is the backstop. Display equations scroll inside their own
+     box, but a single long inline run has no break point anywhere, and letting
+     that escape gives the whole page a horizontal scrollbar on a phone. */
+  .lbody{flex:1 1 auto;min-height:0;padding:0 20px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
   .rung{padding:12px 0 14px}
   .rnum{width:16px;font-size:12px}
   .rtitle{font-size:12.5px}

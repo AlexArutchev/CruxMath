@@ -10,6 +10,24 @@ export const TOUR_KEY = "crux.tourDone";
 export const TOUR_PARAM = "tour";
 
 /**
+ * Where START SOLVING lands a first-time visitor. Finishing the tour only to be
+ * left in front of a 1330-row library is a dead end: the tour has just promised
+ * hint ladders and medals, and the fastest way to make good on that is a real
+ * problem carrying both.
+ *
+ * ONLY the completion path comes here. SKIP, Escape, the scrim and the swipe all
+ * dismiss to the library, because an explicit dismissal is a request to be left
+ * alone, not an invitation to redirect.
+ *
+ * 2026 AIME II #1: newest contest, difficulty 3 of 10, three rungs, no figure to
+ * render, and a one-sentence statement that fits on a phone without scrolling.
+ * Easy enough not to turn a newcomer away, hard enough that the hints earn their
+ * place. A constant rather than a string buried in the markup, since removing
+ * that problem would silently turn this into a 404.
+ */
+export const FIRST_SOLVE_HREF = "/problem/2026-aime-ii-1";
+
+/**
  * Runs before the body is parsed, so a visitor who has already taken the tour
  * never gets a frame of it. Kept to one statement on purpose: it is render
  * blocking. Paired with the `[data-tour="done"]` rule in globals.css.
@@ -282,12 +300,19 @@ export default function Tour() {
                 BACK
               </button>
             )}
-            <button
-              className="tour-next"
-              onClick={() => (step === 1 ? setStep(2) : close())}
-            >
-              {step === 1 ? "NEXT" : "START SOLVING"}
-            </button>
+            {step === 1 ? (
+              <button className="tour-next" onClick={() => setStep(2)}>
+                NEXT
+              </button>
+            ) : (
+              // A real link, not a button that pushes a route: middle-click and
+              // "open in new tab" keep working, and Next can prefetch the
+              // problem while the reader is still on step 2. close() still runs
+              // first, so the tour is marked done and never reappears.
+              <Link className="tour-next" href={FIRST_SOLVE_HREF} onClick={close}>
+                START SOLVING
+              </Link>
+            )}
           </span>
         </div>
       </div>

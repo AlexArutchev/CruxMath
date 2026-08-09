@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { latexInHtml } from "@/lib/latex";
+import { latexInHtml, latexToHtml } from "@/lib/latex";
 import type { Rung } from "@/lib/types";
 
 function toRoman(n: number): string {
@@ -177,7 +177,19 @@ export default function HintLadder({
                 <>
                   <div className="rhead">
                     <span className={`rnum${solved && idx > revealed ? " lk" : ""}`}>{roman}</span>
-                    <span className="rtitle">{r ? r.title : "Loading…"}</span>
+                    {/* Titles carry math too: about a quarter of them contain a
+                        $...$ run, and rendering the raw source put dollar signs
+                        in front of the reader. Same treatment as the body, but
+                        latexToHtml, since a title is plain text and its prose
+                        must stay escaped. */}
+                    {r ? (
+                      <span
+                        className="rtitle"
+                        dangerouslySetInnerHTML={{ __html: latexToHtml(r.title) }}
+                      />
+                    ) : (
+                      <span className="rtitle">Loading…</span>
+                    )}
                   </div>
                   <div
                     className="rbody"
