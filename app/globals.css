@@ -13,7 +13,12 @@
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif)}
   .mono{font-family:var(--mono)}
   a{color:var(--ox);text-decoration:none}
-  .katex{font-size:1.03em}
+  /* Exactly 1em, not a hair over. A fractional scale lands KaTeX's glyph metrics
+     between device pixels, and the two ~1px bars of an equals sign then rasterise
+     unevenly: the top bar sits on a pixel row and the bottom one straddles two,
+     which reads as faint. Any size that leaves the bars on whole pixels is fine;
+     1.03 was not one of them. */
+  .katex{font-size:1em}
   header{display:flex;align-items:baseline;justify-content:space-between;padding:16px 36px;border-bottom:1px solid var(--line)}
   .brand{display:flex;align-items:baseline;gap:26px}
   .wordmark{font-weight:700;font-size:15px;letter-spacing:.2em}
@@ -60,6 +65,10 @@
      wraps, would otherwise widen the whole rung. */
   .rtitle{font-weight:600;font-size:14.5px;line-height:1.4;min-width:0;overflow-wrap:break-word}
   .rbody{font-weight:400;font-size:13px;line-height:1.62;color:var(--mut3);margin:10px 0 0 30px;overflow-wrap:break-word}
+  /* Prose in a rung is deliberately muted, but math is not prose: +, - and =
+     are single thin horizontal bars, and they wash out at --mut3 while letter
+     stems still read fine. Math takes full ink, the prose around it stays soft. */
+  .rbody .katex{color:var(--ink)}
   .rbody svg{display:block;max-width:270px;margin-top:12px}
   /* A display equation is one unbreakable line, so a long one ran past the rung
      and off the screen. It scrolls inside its own box now instead of dragging
