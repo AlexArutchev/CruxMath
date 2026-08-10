@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { latexToHtml, latexInHtml } from "@/lib/latex";
 import HintLadder from "./HintLadder";
 import AopsButton from "./AopsButton";
+import TopicButton from "./TopicButton";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { aopsUrl } from "@/lib/aops";
 import { revealRung, checkAnswer, getReview } from "@/app/actions";
@@ -401,6 +402,10 @@ export default function SolveClient({
                 }}
               />
             </div>
+            {/* Inside the review, so it inherits reviewOpen: solved, or every
+                rung spent. Below the review text rather than above it, since
+                the question it answers is where to go next. */}
+            <TopicButton problemId={problem.id} />
           </div>
         )}
       </div>
