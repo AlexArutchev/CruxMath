@@ -6,8 +6,8 @@ import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
 // This is the URL that actually gets shared, so the preview has to stand alone.
 // "Library" told a stranger nothing.
 export const metadata = {
-  title: "AMC and AIME problems",
-  openGraph: { title: "AMC and AIME problems" },
+  title: "AMC & AIME Practice Problems with Hints",
+  openGraph: { title: "AMC & AIME Practice Problems with Hints" },
 };
 
 // Facet lists change only when content is reseeded.
