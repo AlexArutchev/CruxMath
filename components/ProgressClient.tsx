@@ -241,12 +241,15 @@ export default function ProgressClient({
           </div>
           <div className="pg-bars" style={{ marginTop: 16 }}>
             {buckets.map((b) => {
-              const px = (n: number) => (n / peakColumn) * 124;
+              // Use the chart's own height, rather than a desktop pixel constant.
+              // The mobile chart is shorter, so fixed 124px bars used to spill out
+              // past its baseline on phones.
+              const height = (n: number) => (n / peakColumn) * 100 + "%";
               return (
                 <div className="pg-col" key={b.difficulty}>
-                  <span className="gold" style={{ height: px(b.counts.gold) }} />
-                  <span className="silver" style={{ height: px(b.counts.silver) }} />
-                  <span className="bronze" style={{ height: px(b.counts.bronze) }} />
+                  <span className="gold" style={{ height: height(b.counts.gold) }} />
+                  <span className="silver" style={{ height: height(b.counts.silver) }} />
+                  <span className="bronze" style={{ height: height(b.counts.bronze) }} />
                 </div>
               );
             })}

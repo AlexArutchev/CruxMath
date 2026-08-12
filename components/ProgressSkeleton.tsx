@@ -72,9 +72,9 @@ export default function ProgressSkeleton() {
             <span className="sk-bar" style={{ width: 96, ...delay(1) }} />
           </div>
           <div className="pg-bars" style={{ marginTop: 16 }}>
-            {[38, 62, 92, 120, 86, 58, 34, 20, 12, 6].map((h, i) => (
+            {[29, 47, 70, 91, 65, 44, 26, 15, 9, 5].map((h, i) => (
               <div className="pg-col" key={i}>
-                <span className="sk-bar" style={{ height: h, ...delay(i) }} />
+                <span className="sk-bar" style={{ height: h + "%", ...delay(i) }} />
               </div>
             ))}
           </div>
