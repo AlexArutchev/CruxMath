@@ -143,10 +143,19 @@ function renderInHtml(html: string): string {
   return parts
     .map((part) => {
       if (/^<svg/i.test(part)) return part;
-      // Only the text between tags is eligible for math rendering.
-      return part.replace(/(<[^>]+>)|([^<]+)/g, (_m, tag: string, text: string) =>
-        tag ? tag : renderSegments(scan(text), false)
-      );
+      // Only text between actual HTML tags is eligible for math rendering.
+      // A broad `<[^>]+>` matcher treats a comparison such as `$a<b$` as a
+      // tag, splitting its delimiters apart and leaving literal dollar signs
+      // on screen. A tag name must end before whitespace, `/`, or `>`; `$`,
+      // digits, and other math characters cannot continue one.
+      return part
+        .split(/(<!--[\s\S]*?-->|<\/?[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?\s*\/?>)/g)
+        .map((piece) =>
+          /^(<!--[\s\S]*?-->|<\/?[A-Za-z][A-Za-z0-9:-]*(?:\s+[^<>]*?)?\s*\/?>)$/.test(piece)
+            ? piece
+            : renderSegments(scan(piece), false)
+        )
+        .join("");
     })
     .join("");
 }
