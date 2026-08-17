@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Button, { buttonClassName } from "./ui/Button";
+import ConfirmDialog from "./ui/ConfirmDialog";
 
 /**
  * Link out to the AoPS wiki page.
@@ -32,7 +34,7 @@ export default function AopsButton({
     return (
       <div className="aops">
         <a
-          className="aops-btn"
+          className={buttonClassName("secondary", "aops-btn")}
           href={url}
           target="_blank"
           rel="noopener noreferrer"
@@ -45,42 +47,27 @@ export default function AopsButton({
     );
   }
 
-  if (pending) {
-    return (
-      <div className="aops">
-        <div className="confirm aops-confirm">
-          <div className="q">Are you sure you want to see the full solutions?</div>
-          <div className="row">
-            <a
-              className="cbtn yes"
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => {
-                onView();
-                setShown(true);
-                setPending(false);
-              }}
-            >
-              SHOW SOLUTIONS
-            </a>
-            <button className="cbtn no" onClick={() => setPending(false)}>
-              NOT YET
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="aops">
-      <button className="aops-btn" onClick={() => setPending(true)}>
+      <Button variant="secondary" className="aops-btn" onClick={() => setPending(true)}>
         FULL SOLUTIONS ON AOPS &rarr;
-      </button>
+      </Button>
       <span className="aops-note">
         No hint ladder for this one yet, so this goes straight to the answer.
       </span>
+      <ConfirmDialog
+        open={pending}
+        title="See full solutions?"
+        description="This opens a community solution page and may show the answer immediately."
+        confirmLabel="SHOW SOLUTIONS"
+        onConfirm={() => {
+          onView();
+          setShown(true);
+          setPending(false);
+          window.open(url, "_blank", "noopener,noreferrer");
+        }}
+        onCancel={() => setPending(false)}
+      />
     </div>
   );
 }

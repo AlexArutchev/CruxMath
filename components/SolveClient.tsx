@@ -5,6 +5,7 @@ import { latexToHtml, latexInHtml } from "@/lib/latex";
 import HintLadder from "./HintLadder";
 import AopsButton from "./AopsButton";
 import TopicButton from "./TopicButton";
+import Button from "./ui/Button";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { aopsUrl } from "@/lib/aops";
 import { revealRung, checkAnswer, getReview } from "@/app/actions";
@@ -272,9 +273,11 @@ export default function SolveClient({
                 else if (verdict && !verdict.ok && choice === c) cls = "cbox wrong";
                 else if (choice === c && !solved) cls = "cbox sel";
                 return (
-                  <button
+                  <Button
                     key={c}
+                    variant="secondary"
                     className={cls}
+                    aria-pressed={choice === c && !solved}
                     onClick={() => {
                       if (solved) return;
                       setChoice(c);
@@ -282,7 +285,7 @@ export default function SolveClient({
                     }}
                   >
                     {c}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -301,13 +304,13 @@ export default function SolveClient({
             />
           )}
 
-          <button
+          <Button
             className="btn"
             onClick={() => void check()}
             disabled={!ready || solved || busy}
           >
             CHECK
-          </button>
+          </Button>
         </div>
 
         {(verdict || (solved && lastCost != null)) && (
@@ -368,9 +371,9 @@ export default function SolveClient({
 
         {canReset && (
           <div className="reset-row">
-            <button className="reset-btn" onClick={resetAttempt}>
+            <Button variant="secondary" className="reset-btn" onClick={resetAttempt}>
               RESET AND TRY AGAIN
-            </button>
+            </Button>
             <span className="reset-note">
               {!shownMedal
                 ? "Clears your hints and guesses so you can work the problem cold."

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Button from "./ui/Button";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
 import { activeMedal, type Medal } from "@/lib/medal";
@@ -340,25 +341,25 @@ export default function BrowseClient({
           onChange={(e) => patch({ q: e.target.value })}
         />
         <div className="mchips">
-          <button className="mfbtn mono" onClick={() => setDrawer(true)}>
+          <Button className="mfbtn mono" onClick={() => setDrawer(true)} aria-expanded={drawer}>
             FILTERS{chips.length ? " · " + chips.length : ""}
-          </button>
+          </Button>
           {chips.map((c) => (
-            <button
+            <Button
               key={c.key}
               className="mfchip mono"
               onClick={c.clear}
               aria-label={"Remove filter " + c.label}
             >
               {c.label} &#10005;
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div className="railwrap">
         {/* Scrim, mobile only. Tapping outside the drawer closes it. */}
-        <button
+        <Button
           className="drawer-scrim"
           aria-label="Close filters"
           onClick={() => setDrawer(false)}
@@ -368,9 +369,9 @@ export default function BrowseClient({
           <span className="sheet-grab" aria-hidden="true" />
           <div className="drawer-headrow">
             <span className="mono ltitle">FILTERS</span>
-            <button className="clear mono" onClick={() => setF(freshFilters())}>
+            <Button variant="quiet" className="clear mono" onClick={() => setF(freshFilters())}>
               CLEAR ALL
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -399,13 +400,15 @@ export default function BrowseClient({
           </div>
           <div className="chips">
             {TYPES.map((t) => (
-              <span
+              <Button
+                variant="secondary"
                 key={t}
                 className={"chip" + (f.type === t ? " on" : "")}
                 onClick={() => patch({ type: f.type === t ? null : t })}
+                aria-pressed={f.type === t}
               >
                 {t}
-              </span>
+              </Button>
             ))}
           </div>
         </div>
@@ -443,13 +446,15 @@ export default function BrowseClient({
           <div className="flabel">TIER</div>
           <div className="seg">
             {allTiers.map((t) => (
-              <span
+              <Button
+                variant="secondary"
                 key={t}
                 className={"segbtn" + (f.tiers.has(t) ? " on" : "")}
                 onClick={() => patch({ tiers: toggle(f.tiers, t) })}
+                aria-pressed={f.tiers.has(t)}
               >
                 {t.toUpperCase()}
-              </span>
+              </Button>
             ))}
           </div>
         </div>
@@ -458,13 +463,15 @@ export default function BrowseClient({
           <div className="flabel">HINTS</div>
           <div className="seg">
             {HINTS.map((h) => (
-              <span
+              <Button
+                variant="secondary"
                 key={h.key}
                 className={"segbtn" + (f.hints === h.key ? " on" : "")}
                 onClick={() => patch({ hints: h.key })}
+                aria-pressed={f.hints === h.key}
               >
                 {h.label}
-              </span>
+              </Button>
             ))}
           </div>
         </div>
@@ -473,13 +480,15 @@ export default function BrowseClient({
           <div className="flabel">MEDAL</div>
           <div className="seg">
             {MEDAL_ORDER.map((m) => (
-              <span
+              <Button
+                variant="secondary"
                 key={m}
                 className={"segbtn medal-btn " + m + (f.medals.has(m) ? " on" : "")}
                 onClick={() => patch({ medals: toggle(f.medals, m) })}
+                aria-pressed={f.medals.has(m)}
               >
                 {m.toUpperCase()}
-              </span>
+              </Button>
             ))}
           </div>
           {/* Only shown once we know it is true, so it never contradicts a list
@@ -496,30 +505,32 @@ export default function BrowseClient({
           <div className="flabel">TOPIC</div>
           <div className="chips">
             {allTopics.map((t) => (
-              <span
+              <Button
+                variant="secondary"
                 key={t}
                 className={"chip" + (f.topics.has(t) ? " on" : "")}
                 onClick={() => patch({ topics: toggle(f.topics, t) })}
+                aria-pressed={f.topics.has(t)}
               >
                 {t}
-              </span>
+              </Button>
             ))}
           </div>
         </div>
 
-        <span className="clear clear-rail" onClick={() => setF(freshFilters())}>
+        <Button variant="quiet" className="clear clear-rail" onClick={() => setF(freshFilters())}>
           CLEAR ALL
-        </span>
+        </Button>
       </div>
 
         {/* Sticky in the drawer. The filters already applied live as they were
             tapped, so this only reports the result and dismisses. */}
         <div className="drawer-foot">
-          <button className="drawer-apply mono" onClick={() => setDrawer(false)}>
+          <Button variant="accent" className="drawer-apply mono" onClick={() => setDrawer(false)}>
             {loading
               ? "SEARCHING…"
               : "SHOW " + total + " PROBLEM" + (total === 1 ? "" : "S")}
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -73,14 +73,30 @@
   .answer{margin-top:34px;border-top:1px solid var(--line);padding-top:22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
   .answer .lbl{font-weight:600;font-size:10px;letter-spacing:.16em;color:var(--mut2);flex:1;min-width:180px}
   .ainput{width:104px;font-weight:600;font-size:20px;text-align:center;padding:8px 10px;background:#fff;border:1px solid #C9C2B4;border-radius:2px;color:var(--ink);outline:none;font-family:var(--serif)}
-  .ainput:focus{border-color:var(--ox)}
+  .ainput:focus{border-color:var(--ox);box-shadow:0 0 0 3px rgba(142,59,50,.12)}
   .choices{display:flex;gap:9px;flex-wrap:wrap}
-  .cbox{width:46px;height:46px;font-weight:600;font-size:17px;background:#fff;border:1px solid #C9C2B4;border-radius:2px;color:var(--mut2);cursor:pointer;font-family:var(--mono)}
-  .cbox:hover{border-color:var(--ox);color:var(--ox)}
-  .cbox.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  .cbox.correct{background:var(--green);color:#fff;border-color:var(--green)}
-  .cbox.wrong{border-color:var(--ox);color:var(--ox)}
-  .btn{font-weight:600;font-size:11px;letter-spacing:.12em;padding:12px 22px;background:var(--ink);color:var(--paper);border:none;border-radius:2px;cursor:pointer;font-family:var(--mono)}
+  .cbox{width:46px;height:46px;font-weight:600;font-size:17px;border-radius:2px;cursor:pointer;font-family:var(--mono)}
+  .ui-button{font-weight:600;font-size:10px;letter-spacing:.12em;padding:10px 16px;border-radius:2px;cursor:pointer;font-family:var(--mono);transition:background-color .15s ease,border-color .15s ease,color .15s ease;}
+  .ui-button:focus-visible,.ainput:focus-visible{outline:2px solid var(--ox);outline-offset:3px}
+  .ui-button:disabled{opacity:.55;cursor:default}
+  .ui-button-primary{background:var(--ink);color:var(--paper);border:1px solid var(--ink)}
+  .ui-button-primary:hover:not(:disabled){background:#37322C;border-color:#37322C;color:var(--paper)}
+  .ui-button-secondary{background:#fff;border:1px solid #C9C2B4;color:var(--mut2)}
+  .ui-button-secondary:hover:not(:disabled){border-color:var(--ox);color:var(--ox)}
+  .ui-button-quiet{background:none;border:none;border-bottom:1px solid #D9BCB4;color:var(--ox);padding:0 0 2px}
+  .ui-button-quiet:hover:not(:disabled){border-color:var(--ox)}
+  .ui-button-accent{background:var(--ox);color:var(--paper);border:1px solid var(--ox)}
+  .ui-button-accent:hover:not(:disabled){background:#773129;border-color:#773129}
+  /* Multiple-choice answers follow the AIME text field: warm paper at rest,
+     white on hover, and oxblood at the edge once a choice is made. These need
+     to come after the generic secondary variant, which otherwise wins by CSS
+     source order. */
+  .cbox.ui-button-secondary{background:var(--panel);border-color:#C9C2B4;color:var(--mut2)}
+  .cbox.ui-button-secondary:hover:not(:disabled){background:#fff;border-color:#C9C2B4;color:var(--ink)}
+  .cbox.sel,.cbox.sel:hover:not(:disabled){background:#fff;border-color:var(--ox);color:var(--ink);box-shadow:0 0 0 3px rgba(142,59,50,.12)}
+  .cbox.correct,.cbox.correct:hover:not(:disabled){background:var(--green);color:#fff;border-color:var(--green);box-shadow:none}
+  .cbox.wrong,.cbox.wrong:hover:not(:disabled){background:#fff;border-color:var(--ox);color:var(--ox)}
+  .btn{font-size:11px;padding:12px 22px}
   .verdict{font-style:italic;font-size:14px}
   .verdict.ok{color:var(--green)} .verdict.no{color:var(--ox)}
   .solved-pill{font-weight:600;font-size:10px;letter-spacing:.12em;color:var(--green);border:1px solid #BFD6C6;background:#EDF4EE;padding:3px 8px;border-radius:2px}
@@ -114,7 +130,7 @@
   /* Display math is emitted in a block wrapper so it never sits inside a <p>. */
   .math-source{max-width:100%}
   .tease{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut);flex:1;font-family:var(--mono)}
-  .reveal{font-weight:600;font-size:10px;letter-spacing:.1em;color:var(--ox);background:none;border:none;border-bottom:1px solid #D9BCB4;padding:0 0 2px;cursor:pointer;font-family:var(--mono)}
+  .reveal{font-size:10px;letter-spacing:.1em}
   .rung.far{opacity:.55}
   .confirm{background:#F3E6E2;border:1px solid #E0C7BF;padding:13px 15px}
   .confirm .q{font-size:13px;line-height:1.55;color:var(--mut3)}
@@ -133,8 +149,7 @@
   .rcard .katex{color:var(--ink)}
   .placeholder{border:1px dashed #C9C2B4;background:var(--paper);padding:22px;margin-top:18px;font-style:italic;font-size:13px;line-height:1.6;color:var(--mut2)}
   .aops{margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .aops-btn{font-weight:600;font-size:10px;letter-spacing:.12em;padding:10px 16px;background:#fff;border:1px solid #C9C2B4;border-radius:2px;color:var(--mut2);font-family:var(--mono);cursor:pointer;display:inline-block}
-  .aops-btn:hover{border-color:var(--ox);color:var(--ox)}
+  .aops-btn{display:inline-block}
   .aops-note{font-style:italic;font-size:12px;color:var(--mut);max-width:340px}
   /* Sits at the foot of the review layer. Deliberately quieter than the AoPS
      button: that one ends the problem, this one points past it. Oxblood on the
@@ -143,8 +158,13 @@
   .topic-btn{font-weight:600;font-size:10px;letter-spacing:.12em;padding:10px 16px;background:var(--paper);border:1px solid #D9BCB4;border-radius:2px;color:var(--ox);font-family:var(--mono);display:inline-block}
   .topic-btn:hover{background:var(--ox);border-color:var(--ox);color:var(--paper)}
   .topic-note{font-style:italic;font-size:12px;color:var(--mut);max-width:340px}
-  .aops-confirm{max-width:420px}
-  .aops-confirm .cbtn.yes{text-decoration:none;display:inline-block}
+  .confirm-dialog{width:min(calc(100% - 32px),430px);padding:0;border:1px solid #E0C7BF;background:var(--paper);color:var(--ink);box-shadow:0 18px 50px rgba(28,26,23,.2)}
+  .confirm-dialog::backdrop{background:rgba(28,26,23,.34)}
+  .confirm-dialog-body{padding:22px 23px 24px}
+  .confirm-dialog-kicker{font:600 10px var(--mono);letter-spacing:.15em;color:var(--ox)}
+  .confirm-dialog h2{margin:8px 0 0;font-size:20px;line-height:1.2}
+  .confirm-dialog p{margin:10px 0 0;color:var(--mut3);font-size:14px;line-height:1.55}
+  .confirm-dialog-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
   .hidden{display:none}
   @media(max-width:900px){.stage{grid-template-columns:1fr}aside{border-left:none;border-top:1px solid var(--line)}.rgrid{grid-template-columns:1fr}}
 
@@ -160,11 +180,20 @@
 .chk.on .box{border-color:var(--ox);background:var(--ox);color:var(--paper);font:700 9px monospace}
 .cnt{font-weight:500;font-size:10px;color:var(--dim);margin-left:auto;font-family:var(--mono)}
 .seg{display:flex;flex-direction:column;gap:7px}
-.segbtn{font-weight:600;font-size:10px;letter-spacing:.1em;padding:6px 10px;border:1px solid #C9C2B4;color:var(--mut2);cursor:pointer;text-align:center;font-family:var(--mono)}
+.segbtn{font-weight:600;font-size:10px;letter-spacing:.1em;padding:6px 10px;border:1px solid #C9C2B4;color:var(--mut2);cursor:pointer;text-align:center;font-family:var(--mono);background:transparent}
 .segbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{font-weight:600;font-size:9.5px;padding:5px 9px;border:1px solid #C9C2B4;color:var(--mut2);cursor:pointer;font-family:var(--mono)}
+.chip{font-weight:600;font-size:9.5px;padding:5px 9px;border:1px solid #C9C2B4;color:var(--mut2);cursor:pointer;font-family:var(--mono);background:transparent}
 .chip.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* A selected filter has a dark field and stays white-ink while hovered or
+   focused. Its oxblood outline is the focus cue; changing its text red made a
+   selected control read like an alarm instead of a stable choice. */
+.segbtn.on:hover:not(:disabled),.segbtn.on:focus:not(:disabled),.segbtn.on:active:not(:disabled),
+.chip.on:hover:not(:disabled),.chip.on:focus:not(:disabled),.chip.on:active:not(:disabled),
+.mfbtn:hover:not(:disabled),.mfbtn:focus:not(:disabled),.mfbtn:active:not(:disabled),
+.sheet-act.primary:hover,.sheet-act.primary:focus,.sheet-act.primary:active{
+  color:var(--paper);
+}
 .cyear{width:100%;box-sizing:border-box;font:400 13.5px var(--serif);padding:8px 2px;border:none;border-bottom:1px solid #C9C2B4;background:transparent;outline:none;color:var(--ink)}
 .cyear:focus{border-color:var(--ox)}
 .drange{position:relative;height:22px}
@@ -175,7 +204,7 @@
 .drange input[type=range]::-moz-range-track{background:none;height:22px}
 .drange input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--paper);border:2px solid var(--ox);cursor:pointer;margin-top:5px}
 .drange input[type=range]::-moz-range-thumb{pointer-events:auto;width:13px;height:13px;border-radius:50%;background:var(--paper);border:2px solid var(--ox);cursor:pointer}
-.clear{font-weight:600;font-size:9.5px;letter-spacing:.12em;color:var(--ox);border-bottom:1px solid #D9BCB4;padding-bottom:2px;align-self:flex-start;cursor:pointer;font-family:var(--mono)}
+.clear{font-weight:600;font-size:9.5px;letter-spacing:.12em;color:var(--ox);border:none;border-bottom:1px solid #D9BCB4;padding:0 0 2px;align-self:flex-start;cursor:pointer;font-family:var(--mono);background:none}
 .listhd{display:flex;align-items:baseline;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--line)}
 .listhd .l{font-weight:600;font-size:10px;letter-spacing:.12em;color:var(--mut2);font-family:var(--mono)}
 .listhd .r{font-weight:500;font-size:10px;color:var(--mut);font-family:var(--mono)}
@@ -351,8 +380,7 @@ a.row{text-decoration:none;color:inherit}
 
 /* Reset control */
 .reset-row{margin-top:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.reset-btn{font-weight:600;font-size:10px;letter-spacing:.12em;padding:9px 15px;background:none;border:1px solid #C9C2B4;border-radius:2px;color:var(--mut2);cursor:pointer;font-family:var(--mono)}
-.reset-btn:hover{border-color:var(--ox);color:var(--ox)}
+.reset-btn{padding:9px 15px}
 .reset-note{font-style:italic;font-size:12px;color:var(--mut);max-width:420px}
 
 /* Verdict sits below the answer row so it can never reflow the choices. */
@@ -483,10 +511,6 @@ a.wordmark:hover{color:var(--ox)}
 .mbar,.drawer-head,.drawer-foot,.drawer-scrim,
 .pg-fbtn,.tour-grab{display:none}
 .answer.answer-sheet,.verdict-row.verdict-sheet{display:none}
-
-/* CLEAR ALL is a <span> in the rail and a <button> in the drawer head, and the
-   button arrives with a UA border that reads as a boxed control. */
-button.clear{background:none;border:none;border-bottom:1px solid #D9BCB4;padding:0 0 2px}
 
 /* The rail is a grid item today; wrapping it for the drawer costs it the
    stretch that painted its background and right border down the full page. */

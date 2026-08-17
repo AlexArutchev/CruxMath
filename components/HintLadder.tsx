@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { latexInHtml, latexToHtml } from "@/lib/latex";
 import type { Rung } from "@/lib/types";
+import Button from "./ui/Button";
+import ConfirmDialog from "./ui/ConfirmDialog";
 
 function toRoman(n: number): string {
   const vals: [number, string][] = [
@@ -196,25 +198,20 @@ export default function HintLadder({
                     dangerouslySetInnerHTML={{ __html: r ? latexInHtml(r.bodyHtml) : "" }}
                   />
                 </>
-              ) : confirming ? (
-                <div className="confirm">
-                  <div className="q">Are you sure you want to reveal the hint?</div>
-                  <div className="row">
-                    <button className="cbtn yes" onClick={() => onConfirm(idx)}>
-                      REVEAL {roman}
-                    </button>
-                    <button className="cbtn no" onClick={onCancel}>
-                      NOT YET
-                    </button>
-                  </div>
-                </div>
               ) : isNext ? (
                 <div className="rhead">
                   <span className="rnum lk">{roman}</span>
-                  <span className="tease">{teaseFor(i, M)} &middot; LOCKED</span>
-                  <button className="reveal" onClick={() => onAsk(idx)}>
+                  <span className="tease">
+                    {teaseFor(i, M)} &middot; {confirming ? "CONFIRMING" : "LOCKED"}
+                  </span>
+                  <Button
+                    variant="quiet"
+                    className="reveal"
+                    onClick={() => onAsk(idx)}
+                    disabled={confirming}
+                  >
                     REVEAL
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="rhead">
@@ -236,6 +233,15 @@ export default function HintLadder({
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={pending > 0}
+        title={`Reveal hint ${pending > 0 ? toRoman(pending) : ""}?`}
+        description="This should only be done if you are completely stuck. This hint will be added to this attempt's cost."
+        confirmLabel={`REVEAL ${pending > 0 ? toRoman(pending) : ""}`}
+        onConfirm={() => onConfirm(pending)}
+        onCancel={onCancel}
+      />
 
       <p className="lfoot">Solve it, or exhaust the ladder, and the review layer opens.</p>
 
