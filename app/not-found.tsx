@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="col">
         <p className="stmt">That problem is not in the corpus.</p>
         <p className="lfoot">
-          <Link href="/browse">Back to the library</Link>
+          <Link href="/">Back to the library</Link>
         </p>
       </div>
     </>

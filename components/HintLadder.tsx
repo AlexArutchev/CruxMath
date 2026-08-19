@@ -250,7 +250,7 @@ export default function HintLadder({
           <button className="sheet-act" onClick={() => setOpen((v) => !v)}>
             {open ? "HIDE LADDER" : "REVIEW LADDER"}
           </button>
-          <Link className="sheet-act primary" href="/browse">
+          <Link className="sheet-act primary" href="/">
             MORE PROBLEMS
           </Link>
         </div>

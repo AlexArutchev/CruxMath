@@ -22,7 +22,7 @@ export default function Header({
         {/* Split so the two halves can take different ink. Still one word: at
             .2em tracking a real word space opens a gap wide enough to read as
             two separate things, and the colour break already separates them. */}
-        <Link className="wordmark" href="/browse">
+        <Link className="wordmark" href="/">
           <span className="wm-crux">CRUX</span>MATH
         </Link>
         <Link
