@@ -5,9 +5,19 @@ import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
 
 // This is the URL that actually gets shared, so the preview has to stand alone.
 // "Library" told a stranger nothing.
+const PAGE_TITLE =
+  "CruxMath: AMC and AIME Problems with Hint Based Solutions and Progress Tracking";
+const PAGE_DESCRIPTION =
+  "Practice AMC and AIME problems with hint-based solutions, then track your progress by topic and difficulty.";
+
 export const metadata = {
-  title: "AMC & AIME Practice Problems with Hints",
-  openGraph: { title: "AMC & AIME Practice Problems with Hints" },
+  // `absolute` intentionally bypasses the root title template so Google and
+  // shared previews receive the requested complete title without appending the
+  // brand a second time.
+  title: { absolute: PAGE_TITLE },
+  description: PAGE_DESCRIPTION,
+  openGraph: { title: PAGE_TITLE, description: PAGE_DESCRIPTION },
+  twitter: { title: PAGE_TITLE, description: PAGE_DESCRIPTION },
 };
 
 // Facet lists change only when content is reseeded.

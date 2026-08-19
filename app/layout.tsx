@@ -38,7 +38,15 @@ const mono = IBM_Plex_Mono({
 /** One sentence, and it is the first thing anyone sees when the link is pasted
  *  into Discord or a group chat, so it has to sound like a person wrote it. */
 const DESCRIPTION =
-  "AMC and AIME practice with hints that come one at a time, so you can get unstuck without seeing the whole solution.";
+  "Practice AMC and AIME problems with hint-based solutions, then track your progress by topic and difficulty.";
+
+const ORGANIZATION_SCHEMA = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "CruxMath",
+  url: "https://www.cruxmath.com",
+  description: DESCRIPTION,
+});
 
 export const metadata: Metadata = {
   // Absolute URLs for the link preview. Without this Next warns and og:url
@@ -66,6 +74,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={serif.variable + " " + mono.variable}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: ORGANIZATION_SCHEMA }}
+        />
         {/* First thing in the body so it runs before the tour markup below is
             parsed. The tour ships visible in the server HTML so a new visitor
             gets it on the first frame; this is what stops everyone else seeing
