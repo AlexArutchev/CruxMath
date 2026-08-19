@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "./ui/Button";
 import { latexToHtml } from "@/lib/latex";
 import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
@@ -65,6 +66,7 @@ export default function BrowseClient({
   tiers: string[];
   archiveTotal: number;
 }) {
+  const router = useRouter();
   // Start from defaults so server and client agree on the first paint, then
   // restore from the URL (or the session backup) once mounted. The query is held
   // back until then so a restored view never flashes an unfiltered list first.
@@ -88,6 +90,7 @@ export default function BrowseClient({
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [randomizing, setRandomizing] = useState(false);
   // Two views of the same rows, and they are not interchangeable.
   // `medals` is what the library PAINTS: silver and bronze lapse after
   // MEDAL_TTL_DAYS so those problems resurface, which is the spaced repetition.
@@ -212,6 +215,25 @@ export default function BrowseClient({
     setRows((prev) => [...prev, ...((data as Problem[]) ?? [])]);
     setOffset((o) => o + PAGE_SIZE);
     setLoadingMore(false);
+  }
+
+  async function openRandomProblem() {
+    if (loading || total === 0 || randomizing) return;
+    setRandomizing(true);
+    try {
+      // `total` is the exact count from the current filtered query. Picking an
+      // offset from that whole range avoids limiting random choices to the
+      // currently loaded page.
+      const offset = Math.floor(Math.random() * total);
+      const { data, error } = await build().range(offset, offset).maybeSingle();
+      if (error) throw error;
+      const problem = data as Pick<Problem, "id"> | null;
+      if (problem) router.push("/problem/" + problem.id);
+      else setRandomizing(false);
+    } catch (error) {
+      console.warn("[cruxmath] random problem query failed:", (error as Error).message);
+      setRandomizing(false);
+    }
   }
 
   // Solved markers come from this device's own progress rows.
@@ -547,7 +569,20 @@ export default function BrowseClient({
             )}
           </span>
           <span className="r">
-            {!loading && shown ? "SHOWING 1–" + shown + " OF " + total : ""}
+            {!loading && (
+              <>
+                {shown ? "SHOWING 1–" + shown + " OF " + total : ""}
+                <Button
+                  variant="secondary"
+                  className="mono"
+                  style={{ marginLeft: 12 }}
+                  onClick={openRandomProblem}
+                  disabled={total === 0 || randomizing}
+                >
+                  {randomizing ? "CHOOSING…" : "RANDOM PROBLEM"}
+                </Button>
+              </>
+            )}
           </span>
         </div>
 
