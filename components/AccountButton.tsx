@@ -1,19 +1,14 @@
 "use client";
 
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton, UserButton, useAuth } from "@clerk/nextjs";
 
 /** Optional account upgrade. Anonymous practice remains available to everyone. */
 export default function AccountButton() {
+  const { isSignedIn } = useAuth();
+
   return (
     <div className="account-actions">
-      <Show when="signed-out">
-        <SignInButton mode="modal">
-          <button className="account-signin mono" type="button">
-            SIGN IN TO SYNC
-          </button>
-        </SignInButton>
-      </Show>
-      <Show when="signed-in">
+      {isSignedIn === true ? (
         <UserButton
           appearance={{
             elements: {
@@ -21,7 +16,13 @@ export default function AccountButton() {
             },
           }}
         />
-      </Show>
+      ) : (
+        <SignInButton mode="modal">
+          <button className="account-signin mono" type="button">
+            SIGN IN TO SYNC
+          </button>
+        </SignInButton>
+      )}
     </div>
   );
 }

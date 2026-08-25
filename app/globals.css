@@ -287,6 +287,11 @@ a.row{text-decoration:none;color:inherit}
 .segbtn.gold.on{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-edge)}
 .segbtn.silver.on{background:var(--silver-bg);color:var(--silver);border-color:var(--silver-edge)}
 .segbtn.bronze.on{background:var(--bronze-bg);color:var(--bronze);border-color:var(--bronze-edge)}
+/* Medal labels carry the meaning, so selection must not turn them paper-white
+   during hover, focus, or a press like ordinary dark segmented controls do. */
+.segbtn.medal-btn.gold.on:hover:not(:disabled),.segbtn.medal-btn.gold.on:focus:not(:disabled),.segbtn.medal-btn.gold.on:active:not(:disabled){color:var(--gold)}
+.segbtn.medal-btn.silver.on:hover:not(:disabled),.segbtn.medal-btn.silver.on:focus:not(:disabled),.segbtn.medal-btn.silver.on:active:not(:disabled){color:var(--silver)}
+.segbtn.medal-btn.bronze.on:hover:not(:disabled),.segbtn.medal-btn.bronze.on:focus:not(:disabled),.segbtn.medal-btn.bronze.on:active:not(:disabled){color:var(--bronze)}
 .fnote{margin-top:8px;font-style:italic;font-size:11px;line-height:1.4;color:var(--mut)}
 
 /* Solve-page pill, tinted to match whatever was earned. */
