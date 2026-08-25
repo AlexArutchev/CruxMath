@@ -4,7 +4,7 @@ export const metadata = { title: "Privacy Policy" };
 
 // One place to change the address that appears throughout the policy.
 const CONTACT_EMAIL = "support@cruxmath.com";
-const LAST_UPDATED = "August 7, 2026";
+const LAST_UPDATED = "August 25, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -16,8 +16,9 @@ export default function PrivacyPage() {
 
         <p>
           CruxMath is a free, open-source practice tool for competition math. This policy
-          explains what data is collected, why, and what choices you have. There are no
-          accounts, and we collect as little as possible.
+          explains what data is collected, why, and what choices you have. An account is
+          never required to practice. We collect as little as possible whether you stay
+          anonymous or choose to sign in to sync your progress across devices.
         </p>
 
         <h2>1. What we collect</h2>
@@ -35,9 +36,18 @@ export default function PrivacyPage() {
             reads back.
           </li>
           <li>
+            <strong>Optional account information.</strong> If you choose to sign in to sync your
+            progress across devices, Clerk processes your account ID and the information
+            required by the sign-in method you choose, such as an email address or information
+            shared by a sign-in provider. We use that account ID to store and retrieve your
+            practice record on your other signed-in devices. We do not add your school, age,
+            payment information, or a profile about your math performance to the account.
+          </li>
+          <li>
             <strong>Browser storage.</strong> Your session token is kept in local storage and
             your library filters in session storage, so the site remembers where you were.
-            Neither is sent anywhere.
+            The session token is sent only when the browser communicates with Supabase to read
+            or save your practice record.
           </li>
           <li>
             <strong>Anonymous usage statistics.</strong> We use two analytics services.
@@ -51,8 +61,9 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p>
-          We do not collect your name, email address, school, age, or any payment
-          information, and we do not ask you to create an account.
+          You do not need to provide your name, email address, school, age, or any payment
+          information to use CruxMath. An email address or other sign-in information is
+          collected only if you choose to create an account through Clerk.
         </p>
 
         <h2>2. Technical data our providers see</h2>
@@ -60,7 +71,8 @@ export default function PrivacyPage() {
           CruxMath cannot operate without its hosting and database
           providers briefly processing your <strong>IP address and browser user-agent</strong>{" "}
           in order to deliver pages, create your anonymous session, and block abuse. That
-          happens inside Vercel and Supabase. We do not store it in the application, do not
+          happens inside Vercel and Supabase. If you sign in, Clerk also processes technical
+          data needed to operate and secure your account. We do not store it in the application, do not
           use it to build a profile of you, and do not combine it with your practice record.
         </p>
         <p>
@@ -83,8 +95,11 @@ export default function PrivacyPage() {
           so that &ldquo;120 visits&rdquo; is not reported as 120 different people. They
           carry nothing about who you are, they are readable only on this site, and
           advertising features that would extend them across other sites are turned off.
-          Vercel Analytics remains cookieless. Other than these, the only client-side
-          storage we use is the local storage and session storage described in section 1.
+          Vercel Analytics remains cookieless. If you sign in, Clerk sets essential
+          authentication cookies so the site can recognize your signed-in session. They are
+          for account security and session continuity, not advertising. Other than these, the
+          only client-side storage we use is the local storage and session storage described
+          in section 1.
         </p>
 
         <h2>4. Third-party services</h2>
@@ -100,7 +115,15 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Supabase</strong> provides the database that holds problems, hint ladders,
-            and your anonymous practice record.
+            and practice records, whether they are saved anonymously or through an optional
+            account.
+          </li>
+          <li>
+            <strong>Clerk</strong> provides optional sign-in and account management. Clerk
+            processes the account and authentication information described in section 1 so a
+            signed-in user can access the same practice record on another device. Its privacy
+            policy is available at{" "}
+            <a href="https://clerk.com/legal/privacy">clerk.com/legal/privacy</a>.
           </li>
           <li>
             <strong>Art of Problem Solving</strong> hosts some official contest figures, which
@@ -119,9 +142,15 @@ export default function PrivacyPage() {
         <h2>5. How long we keep it</h2>
         <ul>
           <li>
-            <strong>Your practice record</strong> is kept until you clear your browser data or
-            ask us to delete it. Clearing browser data leaves the record without any way to
-            reach it, since the ID that pointed at it is gone.
+            <strong>Your anonymous practice record</strong> is kept until you clear your browser
+            data or ask us to delete it. Clearing browser data leaves the record without any
+            way to reach it, since the ID that pointed at it is gone.
+          </li>
+          <li>
+            <strong>Your account-linked practice record</strong> is kept while your optional
+            Clerk account remains active, or until you ask us to delete the record. Clearing
+            browser data does not delete this record because signing in on another device must
+            still be able to retrieve it.
           </li>
           <li>
             <strong>Analytics</strong> are retained according to each provider&rsquo;s own
@@ -142,6 +171,11 @@ export default function PrivacyPage() {
             browser, under the local storage key <code>cruxmath-auth</code>.
           </li>
           <li>
+            If you have signed in, you can sign out through the account menu at any time. You
+            can ask us to delete your account-linked practice record at the contact address
+            below. Your sign-in credentials and account profile are managed by Clerk.
+          </li>
+          <li>
             You can stop Google Analytics from loading. Google publishes an official
             browser opt-out add-on, and any content blocker or a browser with tracking
             protection on will block the tag. Clearing site data also deletes the{" "}
@@ -157,11 +191,11 @@ export default function PrivacyPage() {
         <h2>7. Children</h2>
         <p>
           CruxMath is a study tool for contests that students under 13 regularly sit, so we
-          expect younger users and have designed accordingly: there are no accounts, no
-          personal details are requested, and nothing collected identifies a person. We do not
-          knowingly collect personal information from anyone, children included. If you
-          believe a child has provided personal information through this site, contact us and
-          we will remove it.
+          expect younger users and have designed accordingly: an account is not required, and
+          anonymous practice asks for no personal details. A user who elects to create an
+          account may provide personal information to Clerk through the sign-in method they
+          choose. If you believe a child has done so, contact us and we will help remove the
+          account-linked practice record.
         </p>
         <p>
           Google Signals, ads personalisation and all advertising features are switched

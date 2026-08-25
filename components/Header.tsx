@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AccountButton from "./AccountButton";
 
 /**
  * The wordmark is the way home. SOLVE and LIBRARY were separate tabs pointing at
@@ -33,6 +34,7 @@ export default function Header({
         </Link>
       </div>
       {context && <span className="mono hd-ctx">{context}</span>}
+      <AccountButton />
     </header>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { ClerkProvider } from "@clerk/nextjs";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import Footer from "@/components/Footer";
@@ -83,9 +84,50 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gets it on the first frame; this is what stops everyone else seeing
             a flash of it on every page load. */}
         <script dangerouslySetInnerHTML={{ __html: TOUR_NOFLASH }} />
-        {children}
-        <Footer />
-        <Analytics />
+        <ClerkProvider
+          appearance={{
+            // Keep Clerk's battle-tested flow, but make its modal read like a
+            // CruxMath folio rather than a generic account prompt. Direct
+            // colour values keep Clerk's generated colour states compatible
+            // with browsers that do not support modern CSS colour functions.
+            variables: {
+              colorPrimary: "#8E3B32",
+              colorForeground: "#1C1A17",
+              colorMutedForeground: "#6B6459",
+              colorBackground: "#FBFAF7",
+              colorInput: "#FBFAF7",
+              colorInputForeground: "#1C1A17",
+              colorDanger: "#8E3B32",
+              colorSuccess: "#2F7A4D",
+              borderRadius: "2px",
+              fontFamily: "var(--font-serif), Georgia, serif",
+              fontFamilyButtons: "var(--font-mono), ui-monospace, monospace",
+            },
+            elements: {
+              modalBackdrop: "clerk-modal-backdrop",
+              cardBox: "clerk-card-box",
+              card: "clerk-card",
+              headerTitle: "clerk-title",
+              headerSubtitle: "clerk-subtitle",
+              socialButtonsBlockButton: "clerk-social-button",
+              socialButtonsBlockButtonText: "clerk-button-text",
+              dividerLine: "clerk-divider-line",
+              dividerText: "clerk-divider-text",
+              formFieldLabel: "clerk-field-label",
+              formFieldInput: "clerk-field-input",
+              formButtonPrimary: "clerk-primary-button",
+              footerActionText: "clerk-footer-text",
+              footerActionLink: "clerk-footer-link",
+              formResendCodeLink: "clerk-footer-link",
+              identityPreviewText: "clerk-identity-preview",
+              alertText: "clerk-alert-text",
+            },
+          }}
+        >
+          {children}
+          <Footer />
+          <Analytics />
+        </ClerkProvider>
 
         {/* Google's own snippet asks for this immediately after <head>. App
             Router has no head to paste into, so next/script places it and

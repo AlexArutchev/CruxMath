@@ -19,11 +19,14 @@ Next.js (App Router) on Vercel, Supabase Postgres for content and progress.
 
 ## Accounts
 
-There are none, by design. On first visit the browser creates a **Supabase anonymous
+Accounts are optional. On first visit the browser creates a **Supabase anonymous
 session**, which is a real `auth.users` row with no email, password, or prompt. Progress
 is keyed to that id and protected by row level security, so one device can never read
-or write another's rows. Clearing site data starts a fresh identity, which is inherent
-to any no-sign-in scheme.
+or write another's rows. Clearing site data starts a fresh anonymous identity.
+
+Visitors who choose **SIGN IN TO SYNC** create or use a Clerk account. The current
+browser's anonymous progress is copied into that account once, then the account record
+is used on every signed-in device. Signing in is never required to solve problems.
 
 ## Setup
 
@@ -34,6 +37,13 @@ Create a project, then in the SQL editor run [`supabase/schema.sql`](supabase/sc
 Then enable anonymous sign-ins, which are off by default:
 **Authentication -> Sign In / Providers -> Anonymous sign-ins -> enable.**
 Without this the site still works but no progress is saved.
+
+For account sync, configure Clerk as a Supabase third-party provider. In Clerk,
+activate the Supabase integration and copy the Clerk domain it shows. In Supabase,
+open **Authentication -> Sign In / Providers -> Add provider -> Clerk** and paste that
+domain. Run the current [`supabase/schema.sql`](supabase/schema.sql) afterward to
+migrate `user_progress.user_id` from UUID to text and install the Clerk-compatible RLS
+policies.
 
 ### 2. Environment
 
@@ -47,6 +57,8 @@ Fill in from **Project Settings -> API**:
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL | public |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key | public, safe in the browser |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk API Keys | public, enables optional sign-in |
+| `CLERK_SECRET_KEY` | Clerk API Keys | **server only, never commit** |
 | `SUPABASE_SERVICE_ROLE_KEY` | service_role key | **server only, never commit** |
 | `CRUX_CONTENT_DIR` | local path | folder holding `data.js` + `ladders.js` |
 

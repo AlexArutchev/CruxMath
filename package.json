@@ -11,6 +11,7 @@
     "seed": "tsx supabase/seed.ts"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.8.0",
     "@supabase/supabase-js": "^2.45.4",
     "@vercel/analytics": "^2.0.1",
     "katex": "^0.16.11",

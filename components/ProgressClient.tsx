@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { latexToHtml } from "@/lib/latex";
 import ProgressSkeleton from "./ProgressSkeleton";
-import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
+import { useProgressIdentity } from "@/lib/supabase/progress-identity";
 import type { Medal } from "@/lib/medal";
 import {
   byContest,
@@ -32,6 +32,8 @@ export default function ProgressClient({
   archiveByGroup: Record<string, number>;
   allTopics: string[];
 }) {
+  const { isLoaded: progressIdentityLoaded, resolve: resolveProgressIdentity } =
+    useProgressIdentity();
   const [records, setRecords] = useState<SolveRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [topic, setTopic] = useState<string | null>(null);
@@ -49,16 +51,15 @@ export default function ProgressClient({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const id = await ensureDeviceUser();
-      if (!id || cancelled) {
+      const identity = await resolveProgressIdentity();
+      if (!identity || cancelled) {
         if (!cancelled) setLoading(false);
         return;
       }
-      const sb = supabaseBrowser();
-      const { data: prog } = await sb
+      const { data: prog } = await identity.client
         .from("user_progress")
         .select("problem_id, medal, medal_at")
-        .eq("user_id", id)
+        .eq("user_id", identity.userId)
         .not("medal", "is", null);
       if (cancelled) return;
 
@@ -69,7 +70,7 @@ export default function ProgressClient({
         return;
       }
 
-      const { data: probs } = await sb
+      const { data: probs } = await identity.client
         .from("problems")
         .select("id, contest, num, statement, difficulty, topics")
         .in(
@@ -113,7 +114,7 @@ export default function ProgressClient({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [progressIdentityLoaded, resolveProgressIdentity]);
 
   const counts = useMemo(() => countByMedal(records), [records]);
   const split = useMemo(() => medalSplit(counts), [counts]);

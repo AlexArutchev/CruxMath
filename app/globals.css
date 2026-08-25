@@ -58,6 +58,29 @@
   .wordmark .wm-crux{color:var(--ox)}
   .nav{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut)}
   .nav.on{color:var(--ox);border-bottom:1px solid var(--ox);padding-bottom:2px}
+  .account-actions{margin-left:auto;display:flex;align-items:center}
+  .account-signin{border:1px solid var(--line);background:transparent;color:var(--mut);font-size:9px;font-weight:600;letter-spacing:.1em;padding:6px 8px;cursor:pointer}
+  .account-signin:hover,.account-signin:focus-visible{border-color:var(--ox);color:var(--ox);outline:none}
+  .account-avatar{width:26px;height:26px}
+  /* Clerk's modal intentionally inherits the same quiet paper-and-oxblood
+     language as the solving surface. The structural classes are assigned on
+     ClerkProvider so this reaches the sign-in, sign-up, and verification steps
+     without leaking into unrelated UI. */
+  .clerk-modal-backdrop{background:rgba(28,26,23,.48)!important;backdrop-filter:blur(2px)}
+  .clerk-card-box{box-shadow:0 24px 60px rgba(28,26,23,.3)!important}
+  .clerk-card{background:var(--paper)!important;border:1px solid #DCD6C8!important;border-top:4px solid var(--ox)!important;border-radius:0!important;box-shadow:none!important;padding:30px!important}
+  .clerk-title{font-family:var(--serif)!important;font-weight:600!important;font-size:28px!important;letter-spacing:-.025em!important;color:var(--ink)!important}
+  .clerk-subtitle{font-family:var(--serif)!important;font-size:14px!important;font-style:italic!important;line-height:1.45!important;color:var(--mut2)!important}
+  .clerk-social-button{min-height:42px!important;border:1px solid #C9C2B4!important;border-radius:2px!important;background:var(--paper)!important;box-shadow:none!important;transition:border-color .15s ease,background .15s ease!important}
+  .clerk-social-button:hover{border-color:var(--ox)!important;background:#fff!important}
+  .clerk-button-text,.clerk-field-label,.clerk-divider-text,.clerk-footer-text,.clerk-identity-preview{font-family:var(--mono)!important;font-size:10px!important;font-weight:600!important;letter-spacing:.08em!important;color:var(--mut2)!important}
+  .clerk-divider-line{background:var(--line)!important}
+  .clerk-field-input{min-height:42px!important;border:1px solid #C9C2B4!important;border-radius:2px!important;background:#fff!important;box-shadow:none!important;color:var(--ink)!important;font-family:var(--serif)!important;font-size:16px!important}
+  .clerk-field-input:focus{border-color:var(--ox)!important;box-shadow:0 0 0 3px rgba(142,59,50,.12)!important}
+  .clerk-primary-button{min-height:42px!important;border:1px solid var(--ink)!important;border-radius:2px!important;background:var(--ink)!important;box-shadow:none!important;color:var(--paper)!important;font-family:var(--mono)!important;font-size:10px!important;font-weight:600!important;letter-spacing:.13em!important;transition:background .15s ease,border-color .15s ease!important}
+  .clerk-primary-button:hover{background:var(--ox)!important;border-color:var(--ox)!important}
+  .clerk-footer-link{font-family:var(--mono)!important;font-size:10px!important;font-weight:600!important;letter-spacing:.08em!important;color:var(--ox)!important;text-decoration:none!important;border-bottom:1px solid #D9BCB4!important}
+  .clerk-alert-text{font-family:var(--serif)!important;color:var(--ox)!important}
   .kbd{font-weight:500;font-size:10px;color:var(--mut);border:1px solid #DCD6C8;padding:3px 8px;border-radius:2px}
   .stage{display:grid;grid-template-columns:1fr 372px;min-height:calc(100vh - 54px)}
   .col{padding:36px 48px 48px}
@@ -537,6 +560,7 @@ a.wordmark:hover{color:var(--ox)}
   header{padding:13px 20px}
   .brand{gap:18px}
   .wordmark{font-size:13px;letter-spacing:.18em}
+  .account-signin{font-size:8px;padding:5px 6px}
   .hd-ctx{display:block;font-weight:600;font-size:9.5px;letter-spacing:.1em;color:var(--mut)}
   .site-foot{padding:16px 20px;gap:14px;flex-wrap:wrap}
   .legal{padding:24px 20px 44px}

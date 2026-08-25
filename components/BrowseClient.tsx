@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "./ui/Button";
 import { latexToHtml } from "@/lib/latex";
-import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import { useProgressIdentity } from "@/lib/supabase/progress-identity";
 import { activeMedal, type Medal } from "@/lib/medal";
 import { useDragToDismiss } from "@/lib/swipe";
 import { MEDAL_ORDER } from "@/lib/progress";
@@ -67,6 +68,8 @@ export default function BrowseClient({
   archiveTotal: number;
 }) {
   const router = useRouter();
+  const { isLoaded: progressIdentityLoaded, resolve: resolveProgressIdentity } =
+    useProgressIdentity();
   // Start from defaults so server and client agree on the first paint, then
   // restore from the URL (or the session backup) once mounted. The query is held
   // back until then so a restored view never flashes an unfiltered list first.
@@ -241,12 +244,12 @@ export default function BrowseClient({
     let cancelled = false;
     (async () => {
       try {
-        const id = await ensureDeviceUser();
-        if (cancelled || !id) return;
-        const { data } = await supabaseBrowser()
+        const identity = await resolveProgressIdentity();
+        if (cancelled || !identity) return;
+        const { data } = await identity.client
           .from("user_progress")
           .select("problem_id, medal, medal_at")
-          .eq("user_id", id)
+          .eq("user_id", identity.userId)
           .not("medal", "is", null);
         if (cancelled || !data) return;
         const now = Date.now();
@@ -272,7 +275,7 @@ export default function BrowseClient({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [progressIdentityLoaded, resolveProgressIdentity]);
 
   const shown = rows.length;
   const years = useMemo(

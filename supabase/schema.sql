@@ -44,11 +44,13 @@ create index if not exists problems_has_ladder_idx    on public.problems (has_la
 create index if not exists problems_topics_idx        on public.problems using gin (topics);
 
 -- ---------------------------------------------------------------------------
--- PROGRESS (per anonymous device-user, protected by RLS)
+-- PROGRESS (per anonymous device-user or optional Clerk account, protected by RLS)
 -- ---------------------------------------------------------------------------
 
 create table if not exists public.user_progress (
-  user_id        uuid        not null references auth.users(id) on delete cascade,
+  -- Supabase anonymous identities are UUIDs; Clerk identities look like
+  -- `user_...`. Text permits both, so anonymous practice remains opt-in-free.
+  user_id        text        not null,
   problem_id     text        not null references public.problems(id) on delete cascade,
   solved         boolean     not null default false,
   hints_revealed int         not null default 0,
@@ -61,6 +63,32 @@ create table if not exists public.user_progress (
 );
 
 create index if not exists user_progress_user_idx on public.user_progress (user_id);
+
+-- Existing installations began with `user_id uuid references auth.users`. Keep
+-- the anonymous rows, but make room for Clerk's string user ids. The guard lets
+-- a fresh install and an already-migrated database both run this file safely.
+-- Postgres will not alter a column while an RLS policy references it, so release
+-- the four old policies first. They are immediately recreated below with the
+-- same ownership guarantee, but one that also accepts Clerk's string subject.
+drop policy if exists "own progress select" on public.user_progress;
+drop policy if exists "own progress insert" on public.user_progress;
+drop policy if exists "own progress update" on public.user_progress;
+drop policy if exists "own progress delete" on public.user_progress;
+
+do $$
+declare
+  user_id_type text;
+begin
+  select data_type into user_id_type
+  from information_schema.columns
+  where table_schema = 'public' and table_name = 'user_progress' and column_name = 'user_id';
+
+  if user_id_type = 'uuid' then
+    alter table public.user_progress drop constraint if exists user_progress_user_id_fkey;
+    alter table public.user_progress alter column user_id type text using user_id::text;
+  end if;
+end;
+$$;
 
 -- Keep updated_at honest without trusting the client.
 create or replace function public.touch_updated_at()
@@ -98,32 +126,33 @@ create policy "ladders are public"
   to anon, authenticated
   using (true);
 
--- Progress is private to the device-user that owns it. auth.uid() comes from the
--- anonymous JWT, so one device can never read or write another's rows.
+-- Progress is private to the identity in the JWT `sub` claim. This works for
+-- both Supabase anonymous sessions (UUID subjects) and Clerk sessions
+-- (`user_...` subjects). Do not use auth.uid() here: Clerk ids are not UUIDs.
 drop policy if exists "own progress select" on public.user_progress;
 create policy "own progress select"
   on public.user_progress for select
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.jwt() ->> 'sub') = user_id);
 
 drop policy if exists "own progress insert" on public.user_progress;
 create policy "own progress insert"
   on public.user_progress for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check ((select auth.jwt() ->> 'sub') = user_id);
 
 drop policy if exists "own progress update" on public.user_progress;
 create policy "own progress update"
   on public.user_progress for update
   to authenticated
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
+  using ((select auth.jwt() ->> 'sub') = user_id)
+  with check ((select auth.jwt() ->> 'sub') = user_id);
 
 drop policy if exists "own progress delete" on public.user_progress;
 create policy "own progress delete"
   on public.user_progress for delete
   to authenticated
-  using (auth.uid() = user_id);
+  using ((select auth.jwt() ->> 'sub') = user_id);
 
 -- ---------------------------------------------------------------------------
 -- FIGURE STORAGE

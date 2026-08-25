@@ -6,7 +6,7 @@ import HintLadder from "./HintLadder";
 import AopsButton from "./AopsButton";
 import TopicButton from "./TopicButton";
 import Button from "./ui/Button";
-import { supabaseBrowser, ensureDeviceUser } from "@/lib/supabase/client";
+import { useProgressIdentity, type ProgressIdentity } from "@/lib/supabase/progress-identity";
 import { aopsUrl } from "@/lib/aops";
 import { revealRung, checkAnswer, getReview } from "@/app/actions";
 import {
@@ -79,6 +79,9 @@ export default function SolveClient({
   const [busy, setBusy] = useState(false);
 
   const userId = useRef<string | null>(null);
+  const progress = useRef<ProgressIdentity | null>(null);
+  const { isLoaded: progressIdentityLoaded, resolve: resolveProgressIdentity } =
+    useProgressIdentity();
   const choiceMode = answerKind === "choice";
   const url = aopsUrl(problem.contest, problem.num);
 
@@ -87,16 +90,35 @@ export default function SolveClient({
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const id = await ensureDeviceUser();
+      // The identity can change in place when someone signs in or out through
+      // the header. Clear the old owner's view before loading the new owner's
+      // record, including when that record has no row for this problem.
+      setRungs(Array(M).fill(null));
+      setReviewHtml(null);
+      setRevealed(0);
+      setPending(0);
+      setSolved(false);
+      setAttempts(0);
+      setWrongAttempts(0);
+      setAopsViewed(false);
+      setMedal(null);
+      setMedalAt(null);
+      setLastCost(null);
+      setWasLocked(false);
+      setShownAnswer(null);
+      setVerdict(null);
+      setReady(false);
+      const identity = await resolveProgressIdentity();
       if (cancelled) return;
-      userId.current = id;
-      if (id) {
-        const { data } = await supabaseBrowser()
+      userId.current = identity?.userId ?? null;
+      progress.current = identity;
+      if (identity) {
+        const { data } = await identity.client
           .from("user_progress")
           .select(
             "solved, hints_revealed, attempts, wrong_attempts, aops_viewed, medal, medal_at"
           )
-          .eq("user_id", id)
+          .eq("user_id", identity.userId)
           .eq("problem_id", problem.id)
           .maybeSingle();
         if (!cancelled && data) {
@@ -134,13 +156,14 @@ export default function SolveClient({
     return () => {
       cancelled = true;
     };
-  }, [problem.id, M]);
+  }, [problem.id, M, progressIdentityLoaded, resolveProgressIdentity]);
 
   const save = useCallback(
     async (patch: Partial<Saved> & { solved_at?: string | null }) => {
+      const identity = progress.current;
       const id = userId.current;
-      if (!id) return;
-      await supabaseBrowser()
+      if (!id || !identity) return;
+      await identity.client
         .from("user_progress")
         .upsert(
           { user_id: id, problem_id: problem.id, ...patch },

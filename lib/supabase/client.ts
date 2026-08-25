@@ -23,6 +23,29 @@ export function supabaseBrowser(): SupabaseClient {
   return cached;
 }
 
+/**
+ * A short-lived browser client that authenticates each request with the active
+ * Clerk session. It deliberately does not persist a second Supabase session:
+ * Clerk owns account authentication, while the regular browser client above
+ * continues to own the optional anonymous device session.
+ */
+export function supabaseForClerk(
+  getToken: () => Promise<string | null>
+): SupabaseClient {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      accessToken: getToken,
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    }
+  );
+}
+
 let signingIn: Promise<string | null> | null = null;
 
 /**
