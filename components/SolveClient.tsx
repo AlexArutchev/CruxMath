@@ -8,7 +8,7 @@ import TopicButton from "./TopicButton";
 import Button from "./ui/Button";
 import { useProgressIdentity, type ProgressIdentity } from "@/lib/supabase/progress-identity";
 import { aopsUrl } from "@/lib/aops";
-import { revealRung, checkAnswer, getReview } from "@/app/actions";
+import { revealRung, submitAnswer, getReview } from "@/app/actions";
 import {
   solveCost,
   medalForCost,
@@ -135,9 +135,13 @@ export default function SolveClient({
             setLastCost(solveCost(p.hints_revealed, p.wrong_attempts ?? 0));
             setVerdict({ ok: true, text: "Solved." });
           }
-          if (n > 0) {
+          // A solved problem exposes the entire ladder, including rungs the
+          // student did not spend. Fetch those too: rendering all rungs with
+          // only the spent ones populated leaves the rest stuck on “Loading…”.
+          const rungsToLoad = p.solved ? M : n;
+          if (rungsToLoad > 0) {
             const fetched = await Promise.all(
-              Array.from({ length: n }, (_, i) => revealRung(problem.id, i))
+              Array.from({ length: rungsToLoad }, (_, i) => revealRung(problem.id, i))
             );
             if (!cancelled) {
               setRungs((prev) => {
@@ -194,9 +198,17 @@ export default function SolveClient({
     const nextAttempts = attempts + 1;
     setAttempts(nextAttempts);
 
-    const { correct, answer } = await checkAnswer(problem.id, given);
+    const { correct, answer, rungs: earnedRungs, reviewHtml: earnedReview } = await submitAnswer(
+      problem.id,
+      given
+    );
 
     if (correct) {
+      // `submitAnswer` returns this only after a correct guess. Keeping the
+      // earned rungs and review in its response avoids a second action round
+      // trip before the solved state can render.
+      if (earnedRungs) setRungs(earnedRungs);
+      setReviewHtml(earnedReview ?? "");
       const cost = solveCost(revealed, wrongAttempts);
       const outcome = medalAfterSolve(medal, medalAt, cost);
       const now = new Date().toISOString();

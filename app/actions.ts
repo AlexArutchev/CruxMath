@@ -34,20 +34,41 @@ export async function revealRung(
  * Grade a guess without ever sending the answer to the browser. The answer comes
  * back only once it has been earned, so the solved view can display it.
  */
-export async function checkAnswer(
+export async function submitAnswer(
   problemId: string,
   guess: string
-): Promise<{ correct: boolean; answer: string | null }> {
-  if (!problemId || typeof guess !== "string") return { correct: false, answer: null };
+): Promise<{
+  correct: boolean;
+  answer: string | null;
+  rungs: Rung[] | null;
+  reviewHtml: string | null;
+}> {
+  if (!problemId || typeof guess !== "string") {
+    return { correct: false, answer: null, rungs: null, reviewHtml: null };
+  }
   const sb = supabaseServer();
-  const { data } = await sb
-    .from("problems")
-    .select("answer")
-    .eq("id", problemId)
+  // The two queries are independent. Fetch the earned material beside the
+  // answer check, but keep it on the server unless the guess is correct. This
+  // removes the post-check round trips without exposing hints up front.
+  const problemQuery = sb.from("problems").select("answer").eq("id", problemId).maybeSingle();
+  const ladderQuery = sb
+    .from("ladders")
+    .select("rungs, review_html")
+    .eq("problem_id", problemId)
     .maybeSingle();
-  const answer = (data?.answer ?? null) as string | null;
+  const { data: problem } = await problemQuery;
+  const answer = (problem?.answer ?? null) as string | null;
   const correct = isCorrect(guess, answer);
-  return { correct, answer: correct ? answer : null };
+  if (!correct) return { correct: false, answer: null, rungs: null, reviewHtml: null };
+
+  const { data: ladder } = await ladderQuery;
+
+  return {
+    correct: true,
+    answer,
+    rungs: (ladder?.rungs ?? []) as Rung[],
+    reviewHtml: (ladder?.review_html ?? null) as string | null,
+  };
 }
 
 /** The after-action review, once the problem is solved or the ladder is spent. */
