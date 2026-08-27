@@ -189,9 +189,6 @@
 /* ---- Library / browse ---- */
 .browse-intro{padding:30px 36px 26px;border-bottom:1px solid var(--line);max-width:100%}
 .browse-intro h1{margin:0;font-size:28px;line-height:1.15;font-weight:600;letter-spacing:-.025em}
-.browse-intro p{max-width:650px;margin:9px 0 0;color:var(--mut2);font-size:15px;line-height:1.55}
-.contest-hubs{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font:600 10px var(--mono);letter-spacing:.12em}
-.contest-hubs a{border-bottom:1px solid #D9BCB4;padding-bottom:2px}
 .wrap{display:grid;grid-template-columns:264px 1fr;min-height:calc(100vh - 54px)}
 .rail{border-right:1px solid var(--line);background:var(--panel);padding:24px 22px 30px;display:flex;flex-direction:column;gap:24px}
 .rsearch{width:100%;font:400 14px var(--serif);padding:9px 2px;border:none;border-bottom:1px solid #C9C2B4;background:transparent;outline:none;color:var(--ink)}
