@@ -8,6 +8,7 @@ const PAGE_DESCRIPTION =
 export const metadata = {
   title: { absolute: PAGE_TITLE },
   description: PAGE_DESCRIPTION,
+  alternates: { canonical: "/" },
   openGraph: { title: PAGE_TITLE, description: PAGE_DESCRIPTION },
   twitter: { title: PAGE_TITLE, description: PAGE_DESCRIPTION },
 };

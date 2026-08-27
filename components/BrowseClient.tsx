@@ -77,7 +77,9 @@ export default function BrowseClient({
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {
-    setF(loadFilters(window.location.search));
+    const hasQuery = !!window.location.search && window.location.search !== "?";
+    if (hasQuery) setF(loadFilters(window.location.search));
+    else setF(loadFilters(""));
     setRestored(true);
   }, []);
 
@@ -403,20 +405,7 @@ export default function BrowseClient({
         />
 
         <div>
-          <div className="flabel">YEAR</div>
-          <input
-            className="cyear"
-            // Derived, not hardcoded: reads "2016+" today and stays right when
-            // the corpus grows backwards.
-            placeholder={years.length ? years.reduce((a, b) => (a < b ? a : b)) + "+" : "Year"}
-            autoComplete="off"
-            inputMode="numeric"
-            value={f.year}
-            onChange={(e) => patch({ year: e.target.value })}
-          />
-          <div className="flabel" style={{ marginTop: 14 }}>
-            TYPE
-          </div>
+          <div className="flabel">CONTEST TYPE</div>
           <div className="chips">
             {TYPES.map((t) => (
               <Button
@@ -430,6 +419,17 @@ export default function BrowseClient({
               </Button>
             ))}
           </div>
+          <div className="flabel" style={{ marginTop: 14 }}>YEAR</div>
+          <input
+            className="cyear"
+            // Derived, not hardcoded: reads "2016+" today and stays right when
+            // the corpus grows backwards.
+            placeholder={years.length ? years.reduce((a, b) => (a < b ? a : b)) + "+" : "Year"}
+            autoComplete="off"
+            inputMode="numeric"
+            value={f.year}
+            onChange={(e) => patch({ year: e.target.value })}
+          />
         </div>
 
         <div>

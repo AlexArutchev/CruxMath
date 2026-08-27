@@ -39,7 +39,15 @@ export default async function BrowsePage() {
   return (
     <>
       <Header active="library" />
-      <BrowseClient contests={contests} tiers={tiers} topics={topics} archiveTotal={total} />
+      <section className="browse-intro">
+        <h1>AMC &amp; AIME Practice Problems with Hints</h1>
+      </section>
+      <BrowseClient
+        contests={contests}
+        tiers={tiers}
+        topics={topics}
+        archiveTotal={total}
+      />
       {/* The library is the landing surface. The tour renders over it and does
           not wait on the problem query, so a first visit has something to read
           while the list loads behind the scrim. */}
