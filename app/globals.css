@@ -174,13 +174,8 @@
   .aops{margin-top:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .aops-btn{display:inline-block}
   .aops-note{font-style:italic;font-size:12px;color:var(--mut);max-width:340px}
-  /* Sits at the foot of the review layer. Deliberately quieter than the AoPS
-     button: that one ends the problem, this one points past it. Oxblood on the
-     border marks it as ours rather than another grey control. */
-  .topic{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .topic-btn{font-weight:600;font-size:10px;letter-spacing:.12em;padding:10px 16px;background:var(--paper);border:1px solid #D9BCB4;border-radius:2px;color:var(--ox);font-family:var(--mono);display:inline-block}
-  .topic-btn:hover{background:var(--ox);border-color:var(--ox);color:var(--paper)}
-  .topic-note{font-style:italic;font-size:12px;color:var(--mut);max-width:340px}
+  .next-problem{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .next-note{font-style:italic;font-size:12px;color:var(--mut)}
   .confirm-dialog{width:min(calc(100% - 32px),430px);padding:0;border:1px solid #E0C7BF;background:var(--paper);color:var(--ink);box-shadow:0 18px 50px rgba(28,26,23,.2)}
   .confirm-dialog::backdrop{background:rgba(28,26,23,.34)}
   .confirm-dialog-body{padding:22px 23px 24px}
@@ -192,6 +187,11 @@
   @media(max-width:900px){.stage{grid-template-columns:1fr}aside{border-left:none;border-top:1px solid var(--line)}.rgrid{grid-template-columns:1fr}}
 
 /* ---- Library / browse ---- */
+.browse-intro{padding:30px 36px 26px;border-bottom:1px solid var(--line);max-width:100%}
+.browse-intro h1{margin:0;font-size:28px;line-height:1.15;font-weight:600;letter-spacing:-.025em}
+.browse-intro p{max-width:650px;margin:9px 0 0;color:var(--mut2);font-size:15px;line-height:1.55}
+.contest-hubs{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;font:600 10px var(--mono);letter-spacing:.12em}
+.contest-hubs a{border-bottom:1px solid #D9BCB4;padding-bottom:2px}
 .wrap{display:grid;grid-template-columns:264px 1fr;min-height:calc(100vh - 54px)}
 .rail{border-right:1px solid var(--line);background:var(--panel);padding:24px 22px 30px;display:flex;flex-direction:column;gap:24px}
 .rsearch{width:100%;font:400 14px var(--serif);padding:9px 2px;border:none;border-bottom:1px solid #C9C2B4;background:transparent;outline:none;color:var(--ink)}

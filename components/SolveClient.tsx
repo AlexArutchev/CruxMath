@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { latexToHtml, latexInHtml } from "@/lib/latex";
 import HintLadder from "./HintLadder";
 import AopsButton from "./AopsButton";
-import TopicButton from "./TopicButton";
 import Button from "./ui/Button";
 import { useProgressIdentity, type ProgressIdentity } from "@/lib/supabase/progress-identity";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import { loadFilters } from "@/lib/browse-filters";
 import { aopsUrl } from "@/lib/aops";
 import { revealRung, submitAnswer, getReview } from "@/app/actions";
 import {
@@ -78,7 +80,9 @@ export default function SolveClient({
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [clock, setClock] = useState(() => Date.now());
+  const [nextState, setNextState] = useState<"idle" | "loading" | "none">("idle");
 
+  const router = useRouter();
   const userId = useRef<string | null>(null);
   const progress = useRef<ProgressIdentity | null>(null);
   const { isLoaded: progressIdentityLoaded, resolve: resolveProgressIdentity } =
@@ -107,6 +111,7 @@ export default function SolveClient({
       setLastCost(null);
       setShownAnswer(null);
       setVerdict(null);
+      setNextState("idle");
       setReady(false);
       const identity = await resolveProgressIdentity();
       if (cancelled) return;
@@ -287,6 +292,64 @@ export default function SolveClient({
       void save({ attempts: nextAttempts, wrong_attempts: nextWrong });
     }
     setBusy(false);
+  }
+
+  async function openNextProblem() {
+    if (nextState === "loading") return;
+    setNextState("loading");
+    try {
+      // Browse saves its exact filters before opening a row. Reapply those
+      // conditions and its stable contest/number order, then move one slot
+      // forward from this problem. The query selects ids only, never answers.
+      const filters = loadFilters("");
+      let medalIds: string[] | null = null;
+      if (filters.medals.size) {
+        const identity = await resolveProgressIdentity();
+        if (!identity) {
+          setNextState("none");
+          return;
+        }
+        const { data } = await identity.client
+          .from("user_progress")
+          .select("problem_id, medal")
+          .eq("user_id", identity.userId)
+          .not("medal", "is", null);
+        medalIds = (data ?? [])
+          .filter((row) => !!row.medal && filters.medals.has(row.medal as Medal))
+          .map((row) => row.problem_id);
+        if (!medalIds.length) {
+          setNextState("none");
+          return;
+        }
+      }
+
+      let query = supabaseBrowser().from("problems").select("id");
+      if (filters.q.trim()) query = query.textSearch("statement_fts", filters.q.trim(), { type: "websearch" });
+      if (filters.year.trim()) query = query.like("contest", filters.year.trim() + "%");
+      if (filters.type) query = query.like("contest", "%" + filters.type + "%");
+      if (filters.tiers.size) query = query.in("tier", Array.from(filters.tiers));
+      if (filters.topics.size) query = query.overlaps("topics", Array.from(filters.topics));
+      if (filters.hints === "with") query = query.eq("has_ladder", true);
+      if (filters.hints === "without") query = query.eq("has_ladder", false);
+      if (medalIds) query = query.in("id", medalIds);
+      if (filters.dlo > 1) query = query.gte("difficulty", filters.dlo);
+      if (filters.dhi < 10) query = query.lte("difficulty", filters.dhi);
+      const { data, error } = await query
+        .order("contest", { ascending: false })
+        .order("num", { ascending: true })
+        .range(0, 9999);
+      if (error) throw error;
+      const ids = (data ?? []) as { id: string }[];
+      const next = ids[ids.findIndex((item) => item.id === problem.id) + 1];
+      if (!next) {
+        setNextState("none");
+        return;
+      }
+      router.push("/problem/" + next.id);
+    } catch (error) {
+      console.warn("[cruxmath] next problem query failed:", (error as Error).message);
+      setNextState("none");
+    }
   }
 
   const earned = !hasLadder || solved || revealed >= M;
@@ -494,7 +557,17 @@ export default function SolveClient({
             {/* Inside the review, so it inherits reviewOpen: solved, or every
                 rung spent. Below the review text rather than above it, since
                 the question it answers is where to go next. */}
-            <TopicButton problemId={problem.id} />
+          </div>
+        )}
+
+        {solved && (
+          <div className="next-problem">
+            <Button variant="accent" onClick={openNextProblem} disabled={nextState !== "idle"}>
+              {nextState === "loading" ? "FINDING NEXT PROBLEM…" : "NEXT PROBLEM"}
+            </Button>
+            {nextState === "none" && (
+              <span className="next-note">No later problem matches your current library filters.</span>
+            )}
           </div>
         )}
       </div>

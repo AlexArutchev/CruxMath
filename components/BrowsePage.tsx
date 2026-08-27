@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import BrowseClient from "@/components/BrowseClient";
 import Tour from "@/components/Tour";
+import Link from "next/link";
 import { supabaseServer, hasSupabaseEnv } from "@/lib/supabase/server";
 
 async function facets() {
@@ -34,12 +35,37 @@ async function facets() {
   return { contests, tiers, topics, total: count ?? 0 };
 }
 
-export default async function BrowsePage() {
+export default async function BrowsePage({
+  initialType,
+  title = "AMC & AIME Practice Problems with Hints",
+  description = "Choose a contest, topic, or difficulty, then work through competition problems with progressive hints that preserve the key idea.",
+}: {
+  initialType?: string;
+  title?: string;
+  description?: string;
+}) {
   const { contests, tiers, topics, total } = await facets();
   return (
     <>
       <Header active="library" />
-      <BrowseClient contests={contests} tiers={tiers} topics={topics} archiveTotal={total} />
+      <section className="browse-intro">
+        <h1>{title}</h1>
+        <p>{description}</p>
+        {!initialType && (
+          <nav className="contest-hubs" aria-label="Practice by contest">
+            <Link href="/amc-10">AMC 10</Link>
+            <Link href="/amc-12">AMC 12</Link>
+            <Link href="/aime">AIME</Link>
+          </nav>
+        )}
+      </section>
+      <BrowseClient
+        contests={contests}
+        tiers={tiers}
+        topics={topics}
+        archiveTotal={total}
+        initialType={initialType}
+      />
       {/* The library is the landing surface. The tour renders over it and does
           not wait on the problem query, so a first visit has something to read
           while the list loads behind the scrim. */}

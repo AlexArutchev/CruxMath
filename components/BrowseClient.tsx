@@ -61,11 +61,13 @@ export default function BrowseClient({
   topics: allTopics,
   tiers: allTiers,
   archiveTotal,
+  initialType,
 }: {
   contests: string[];
   topics: string[];
   tiers: string[];
   archiveTotal: number;
+  initialType?: string;
 }) {
   const router = useRouter();
   const { isLoaded: progressIdentityLoaded, resolve: resolveProgressIdentity } =
@@ -77,9 +79,12 @@ export default function BrowseClient({
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {
-    setF(loadFilters(window.location.search));
+    const hasQuery = !!window.location.search && window.location.search !== "?";
+    if (hasQuery) setF(loadFilters(window.location.search));
+    else if (initialType) setF({ ...freshFilters(), type: initialType });
+    else setF(loadFilters(""));
     setRestored(true);
-  }, []);
+  }, [initialType]);
 
   // Keep the address bar in step without pushing a history entry per keystroke.
   useEffect(() => {

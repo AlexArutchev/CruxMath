@@ -11,6 +11,19 @@ import type { Problem, Ladder } from "@/lib/types";
 // expired, leaving valid library links broken.
 export const revalidate = 0;
 
+function plainStatement(statement: string): string {
+  return statement
+    .replace(/\$([^$]+)\$/g, (_, math: string) =>
+      math
+        .replace(/\\textbf\{([^}]*)\}/g, "$1")
+        .replace(/\\(?:qquad|quad|,|;|!)/g, " ")
+        .replace(/\\([A-Za-z]+)/g, "$1")
+        .replace(/[{}]/g, "")
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // generateMetadata and the page body both need this. Without cache() that is two
 // identical round trips per request; React dedupes them within one render pass.
 const load = cache(async (id: string) => {
@@ -30,9 +43,14 @@ export async function generateMetadata({
   const { id } = await params;
   const { problem } = await load(id);
   if (!problem) return { title: "Problem not found" };
+  const title = `${problem.contest} Problem ${problem.num} Hints`;
+  const description = `${plainStatement(problem.statement).slice(0, 145)} Practice it with progressive hints on CruxMath.`;
   return {
-    title: `${problem.contest} Problem ${problem.num}`,
-    description: problem.statement.slice(0, 155),
+    title,
+    description,
+    alternates: { canonical: `/problem/${id}` },
+    openGraph: { type: "article", url: `/problem/${id}`, title, description },
+    twitter: { title, description },
   };
 }
 
