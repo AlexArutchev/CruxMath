@@ -30,7 +30,7 @@ export type Progress = {
   attempts: number;
   aops_viewed: boolean;
   solved_at: string | null;
-  /** Best medal earned so far. Survives a reset; lapses on its own timer. */
+  /** Best medal earned so far. Survives a reset and stays visible permanently. */
   medal: Medal | null;
   medal_at: string | null;
 };

@@ -170,8 +170,8 @@ on conflict (id) do update set public = true;
 -- The medal records HOW a problem was solved (hints spent at the moment of the
 -- solve) and is kept separate from the live hint counter, so "reset and try
 -- again" can clear the attempt without erasing what was already earned. A medal
--- Gold is kept permanently; silver and bronze lapse after MEDAL_TTL_DAYS, which
--- is why the timestamp is stored rather than a boolean.
+-- Medals stay visible permanently. Silver and bronze use MEDAL_TTL_DAYS as a
+-- retry cooldown, which is why the timestamp is stored rather than a boolean.
 -- ---------------------------------------------------------------------------
 
 alter table public.user_progress

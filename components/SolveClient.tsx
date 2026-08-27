@@ -15,6 +15,7 @@ import {
   medalAfterSolve,
   activeMedal,
   daysLeft,
+  isExpired,
   medalLapses,
   type Medal,
 } from "@/lib/medal";
@@ -70,13 +71,13 @@ export default function SolveClient({
   const [medal, setMedal] = useState<Medal | null>(null);
   const [medalAt, setMedalAt] = useState<string | null>(null);
   const [lastCost, setLastCost] = useState<number | null>(null);
-  const [wasLocked, setWasLocked] = useState(false);
   const [shownAnswer, setShownAnswer] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [choice, setChoice] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<{ ok: boolean; text: string } | null>(null);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [clock, setClock] = useState(() => Date.now());
 
   const userId = useRef<string | null>(null);
   const progress = useRef<ProgressIdentity | null>(null);
@@ -104,7 +105,6 @@ export default function SolveClient({
       setMedal(null);
       setMedalAt(null);
       setLastCost(null);
-      setWasLocked(false);
       setShownAnswer(null);
       setVerdict(null);
       setReady(false);
@@ -123,34 +123,57 @@ export default function SolveClient({
           .maybeSingle();
         if (!cancelled && data) {
           const p = data as Saved;
-          const n = Math.min(p.hints_revealed, M);
-          setRevealed(n);
-          setSolved(p.solved);
-          setAttempts(p.attempts);
-          setWrongAttempts(p.wrong_attempts ?? 0);
-          setAopsViewed(p.aops_viewed);
+          const retryReady =
+            !!p.medal && medalLapses(p.medal) && isExpired(p.medal_at);
           setMedal(p.medal ?? null);
           setMedalAt(p.medal_at ?? null);
-          if (p.solved) {
-            setLastCost(solveCost(p.hints_revealed, p.wrong_attempts ?? 0));
-            setVerdict({ ok: true, text: "Solved." });
-          }
-          // A solved problem exposes the entire ladder, including rungs the
-          // student did not spend. Fetch those too: rendering all rungs with
-          // only the spent ones populated leaves the rest stuck on “Loading…”.
-          const rungsToLoad = p.solved ? M : n;
-          if (rungsToLoad > 0) {
-            const fetched = await Promise.all(
-              Array.from({ length: rungsToLoad }, (_, i) => revealRung(problem.id, i))
-            );
-            if (!cancelled) {
-              setRungs((prev) => {
-                const next = prev.slice();
-                fetched.forEach((r, i) => {
-                  next[i] = r;
+
+          // A silver or bronze attempt becomes fresh after its seven-day
+          // cooldown. Keep the earned medal, but do not restore any hints,
+          // solution state, or answer access from the previous attempt.
+          if (retryReady) {
+            void identity.client
+              .from("user_progress")
+              .upsert(
+                {
+                  user_id: identity.userId,
+                  problem_id: problem.id,
+                  solved: false,
+                  hints_revealed: 0,
+                  attempts: 0,
+                  wrong_attempts: 0,
+                  solved_at: null,
+                },
+                { onConflict: "user_id,problem_id" }
+              );
+          } else {
+            const n = Math.min(p.hints_revealed, M);
+            setRevealed(n);
+            setSolved(p.solved);
+            setAttempts(p.attempts);
+            setWrongAttempts(p.wrong_attempts ?? 0);
+            setAopsViewed(p.aops_viewed);
+            if (p.solved) {
+              setLastCost(solveCost(p.hints_revealed, p.wrong_attempts ?? 0));
+              setVerdict({ ok: true, text: "Solved." });
+            }
+            // A solved problem exposes the entire ladder, including rungs the
+            // student did not spend. Fetch those too: rendering all rungs with
+            // only the spent ones populated leaves the rest stuck on “Loading…”.
+            const rungsToLoad = p.solved ? M : n;
+            if (rungsToLoad > 0) {
+              const fetched = await Promise.all(
+                Array.from({ length: rungsToLoad }, (_, i) => revealRung(problem.id, i))
+              );
+              if (!cancelled) {
+                setRungs((prev) => {
+                  const next = prev.slice();
+                  fetched.forEach((r, i) => {
+                    next[i] = r;
+                  });
+                  return next;
                 });
-                return next;
-              });
+              }
             }
           }
         }
@@ -176,6 +199,36 @@ export default function SolveClient({
     },
     [problem.id]
   );
+
+  const cooldownActive =
+    !!medal && medalLapses(medal) && !isExpired(medalAt, clock);
+
+  // A tab that stays open across the boundary must reset too, not merely one
+  // that is revisited later. The timer advances `clock`, then this effect clears
+  // the old attempt while leaving its medal and timestamp intact.
+  useEffect(() => {
+    if (!medal || !medalLapses(medal) || !medalAt || isExpired(medalAt, clock)) return;
+    const delay = Math.max(0, Date.parse(medalAt) + 7 * 24 * 60 * 60 * 1000 - Date.now()) + 1;
+    const timer = window.setTimeout(() => setClock(Date.now()), delay);
+    return () => window.clearTimeout(timer);
+  }, [medal, medalAt, clock]);
+
+  useEffect(() => {
+    if (!medal || !medalLapses(medal) || !isExpired(medalAt, clock)) return;
+    setRungs(Array(M).fill(null));
+    setReviewHtml(null);
+    setRevealed(0);
+    setPending(0);
+    setSolved(false);
+    setAttempts(0);
+    setWrongAttempts(0);
+    setLastCost(null);
+    setShownAnswer(null);
+    setChoice(null);
+    setInput("");
+    setVerdict(null);
+    void save({ solved: false, hints_revealed: 0, attempts: 0, wrong_attempts: 0, solved_at: null });
+  }, [medal, medalAt, clock, M, save]);
 
   async function confirmRung(idx: number) {
     setPending(0);
@@ -215,7 +268,6 @@ export default function SolveClient({
       setSolved(true);
       setShownAnswer(answer);
       setLastCost(cost);
-      setWasLocked(outcome.locked);
       setMedal(outcome.medal);
       setMedalAt(outcome.medalAt);
       setVerdict({ ok: true, text: "Correct. The answer is " + answer + "." });
@@ -259,12 +311,12 @@ export default function SolveClient({
   }
 
   function resetAttempt() {
+    if (cooldownActive) return;
     setRevealed(0);
     setPending(0);
     setSolved(false);
     setWrongAttempts(0);
     setLastCost(null);
-    setWasLocked(false);
     setShownAnswer(null);
     setChoice(null);
     setInput("");
@@ -278,8 +330,6 @@ export default function SolveClient({
   const canReset = revealed > 0 || solved || wrongAttempts > 0;
   const left = daysLeft(medalAt);
   const attemptMedal = lastCost == null ? null : medalForCost(lastCost);
-  const beatenByLock =
-    wasLocked && attemptMedal === "gold" && !!shownMedal && shownMedal !== "gold";
 
   const tagbits = [
     ...(problem.topics ?? []).map((t) => t.toUpperCase()),
@@ -378,7 +428,9 @@ export default function SolveClient({
             <span className={"solved-pill " + shownMedal}>
               {shownMedal.toUpperCase()} &middot;{" "}
               {medalLapses(shownMedal)
-                ? left + (left === 1 ? " DAY LEFT" : " DAYS LEFT")
+                ? cooldownActive
+                  ? "RETRY IN " + left + (left === 1 ? " DAY" : " DAYS")
+                  : "RETRY READY"
                 : "PERMANENT"}
             </span>
           )}
@@ -396,17 +448,14 @@ export default function SolveClient({
 
         {answerBlock("col")}
 
-        {beatenByLock && (
-          <div className="lock-note">
-            You solved it clean this time, but your {shownMedal} is locked for {left} more
-            day{left === 1 ? "" : "s"}. Come back once it lapses and solve it cold to take the
-            gold.
-          </div>
-        )}
-
         {canReset && (
           <div className="reset-row">
-            <Button variant="secondary" className="reset-btn" onClick={resetAttempt}>
+            <Button
+              variant="secondary"
+              className="reset-btn"
+              onClick={resetAttempt}
+              disabled={cooldownActive}
+            >
               RESET AND TRY AGAIN
             </Button>
             <span className="reset-note">
@@ -414,12 +463,14 @@ export default function SolveClient({
                 ? "Clears your hints and guesses so you can work the problem cold."
                 : !medalLapses(shownMedal)
                 ? "Clears your hints and guesses. Your gold is permanent, so it stays for good."
-                : "Clears your hints and guesses. Your " +
+                : cooldownActive
+                ? "Your " +
                   shownMedal +
-                  " is locked for " +
+                  " attempt resets in " +
                   left +
-                  (left === 1 ? " more day" : " more days") +
-                  " either way, so a retry now cannot change it."}
+                  (left === 1 ? " day" : " days") +
+                  "."
+                : "Clears your hints and guesses so you can work the problem cold."}
             </span>
           </div>
         )}

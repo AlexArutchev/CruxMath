@@ -1,9 +1,9 @@
 export type Medal = "gold" | "silver" | "bronze";
 
-/** How long a lapsing medal stays visible in the library. Gold is exempt. */
+/** How long silver and bronze lock a problem before its next fresh attempt. */
 export const MEDAL_TTL_DAYS = 7;
 
-/** Gold is permanent. Silver and bronze fade so the problem resurfaces. */
+/** Silver and bronze have a retry cooldown. Gold is already final. */
 export function medalLapses(medal: Medal): boolean {
   return medal !== "gold";
 }
@@ -23,11 +23,14 @@ export function medalForCost(cost: number): Medal {
   return "bronze";
 }
 
+function betterMedal(a: Medal, b: Medal): Medal {
+  const rank: Record<Medal, number> = { gold: 0, silver: 1, bronze: 2 };
+  return rank[a] <= rank[b] ? a : b;
+}
+
 /**
- * A medal is LOCKED while it is active. Re-solving during the window does not
- * change it, which is the point: you cannot grind a bronze into a gold by
- * resetting and immediately retrying. Wait for it to lapse, then earn it cold.
- * Gold never lapses, so gold is final.
+ * A medal is LOCKED during its cooldown. Silver and bronze can be improved only
+ * after the problem has reset for a fresh attempt; gold is final.
  */
 export function medalAfterSolve(
   current: Medal | null,
@@ -35,11 +38,20 @@ export function medalAfterSolve(
   cost: number,
   now = Date.now()
 ): { medal: Medal; medalAt: string; locked: boolean } {
-  const active = activeMedal(current, currentAt, now);
-  if (active && currentAt) {
-    return { medal: active, medalAt: currentAt, locked: true };
+  const locked = current === "gold" || (!!current && !isExpired(currentAt, now));
+  if (locked && current) {
+    return {
+      medal: current,
+      medalAt: currentAt ?? new Date(now).toISOString(),
+      locked: true,
+    };
   }
-  return { medal: medalForCost(cost), medalAt: new Date(now).toISOString(), locked: false };
+  const earned = medalForCost(cost);
+  return {
+    medal: current ? betterMedal(current, earned) : earned,
+    medalAt: new Date(now).toISOString(),
+    locked: false,
+  };
 }
 
 export function isExpired(medalAt: string | null | undefined, now = Date.now()): boolean {
@@ -50,21 +62,15 @@ export function isExpired(medalAt: string | null | undefined, now = Date.now()):
 }
 
 /**
- * The medal the library should paint, or null once it has lapsed.
- *
- * Resetting a problem deliberately does NOT clear this: the medal records that
- * you solved it, and only time takes it away. Gold is kept forever, since
- * solving cold is the thing worth keeping a permanent record of; silver and
- * bronze fade after MEDAL_TTL_DAYS so those problems come back around.
+ * The medal the library should paint. Earned medals remain visible forever;
+ * the timestamp controls only when a silver or bronze problem may reset.
  */
 export function activeMedal(
   medal: Medal | null | undefined,
   medalAt: string | null | undefined,
   now = Date.now()
 ): Medal | null {
-  if (!medal) return null;
-  if (!medalLapses(medal)) return medal;
-  return isExpired(medalAt, now) ? null : medal;
+  return medal ?? null;
 }
 
 export function medalLabel(m: Medal): string {

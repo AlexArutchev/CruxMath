@@ -45,9 +45,8 @@ export default function ProgressClient({
   // and this opens them; desktop ignores it and shows the controls as before.
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Every medal ever earned counts here, lapsed or not. The 7-day expiry drives
-  // the library tint (a nudge to revisit); a record of what you solved should
-  // not shrink over time.
+  // Every medal ever earned counts here. The 7-day cooldown resets only the
+  // attempt state; a record of what you solved never shrinks over time.
   useEffect(() => {
     let cancelled = false;
     (async () => {

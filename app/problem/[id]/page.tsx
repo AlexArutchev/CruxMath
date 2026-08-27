@@ -6,9 +6,10 @@ import SolveClient from "@/components/SolveClient";
 import { supabaseServer } from "@/lib/supabase/server";
 import type { Problem, Ladder } from "@/lib/types";
 
-// Content changes only when the seed script runs, so cache pages and refresh
-// them in the background rather than hitting Postgres on every request.
-export const revalidate = 3600;
+// Browse reads the live public corpus. Problem pages must do the same: caching
+// a missing row made newly seeded problems keep returning a 404 until the cache
+// expired, leaving valid library links broken.
+export const revalidate = 0;
 
 // generateMetadata and the page body both need this. Without cache() that is two
 // identical round trips per request; React dedupes them within one render pass.

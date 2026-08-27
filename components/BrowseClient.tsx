@@ -94,12 +94,8 @@ export default function BrowseClient({
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [randomizing, setRandomizing] = useState(false);
-  // Two views of the same rows, and they are not interchangeable.
-  // `medals` is what the library PAINTS: silver and bronze lapse after
-  // MEDAL_TTL_DAYS so those problems resurface, which is the spaced repetition.
-  // `earned` is the permanent record of what was won. Filtering has to use the
-  // record: "show me my bronzes" means every bronze, not the ones from this
-  // week, and gold never lapsing is why only gold appeared to work.
+  // The library paints every earned medal permanently. `earned` remains a
+  // separate map because filtering resolves medal choices to problem ids.
   const [medals, setMedals] = useState<Map<string, Medal>>(new Map());
   const [earned, setEarned] = useState<Map<string, Medal>>(new Map());
   // The medal filter cannot run until this device's progress has arrived, so the
@@ -126,11 +122,9 @@ export default function BrowseClient({
    * Problem ids carrying one of the selected medals, or null when no medal
    * filter is on.
    *
-   * The medal a row should honour is not a column: silver and bronze lapse after
-   * MEDAL_TTL_DAYS, and that decision lives in activeMedal, in TypeScript. So the
-   * filter resolves to an explicit id list here and the database narrows to it,
-   * which keeps the exact count and the paging correct. An empty list is a real
-   * answer (nothing earned yet) and is handled without a query.
+   * The medal filter resolves to an explicit id list, then the database narrows
+   * to it. This keeps the exact count and paging correct. An empty list is a
+   * real answer (nothing earned yet) and is handled without a query.
    */
   const medalIds = useMemo(() => {
     if (!f.medals.size) return null;
