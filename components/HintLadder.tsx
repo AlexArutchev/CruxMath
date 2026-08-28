@@ -104,7 +104,7 @@ export default function HintLadder({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="sheet-title">HINT LADDER</span>
+        <span className="sheet-title">HINTS</span>
         <span className="sheet-meta">{right}</span>
       </button>
     );
@@ -115,13 +115,12 @@ export default function HintLadder({
       <aside ref={setAsideEl} data-sheet={open ? "open" : "closed"}>
         {sheetHead("NOT YET AUTHORED")}
         <div className="ltop">
-          <span className="ltitle">HINT LADDER</span>
+          <span className="ltitle">HINTS</span>
           <span className="lcount">NOT YET AUTHORED</span>
         </div>
-        <p className="lintro">Each rung says why you&rsquo;d think of the move, not just the move.</p>
         <div className="lbody">
           <div className="placeholder">
-            A hint ladder has not been authored for this problem yet. The answer check
+            Hints have not been authored for this problem yet. The answer check
             still works for every problem.
           </div>
         </div>
@@ -156,11 +155,9 @@ export default function HintLadder({
       )}
 
       <div className="ltop">
-        <span className="ltitle">HINT LADDER</span>
+        <span className="ltitle">HINTS</span>
         <span className="lcount">{solved ? "COMPLETE" : `${revealed} OF ${M} REVEALED`}</span>
       </div>
-      <p className="lintro">Each rung says why you&rsquo;d think of the move, not just the move.</p>
-
       <div className="lbody">
         {rungs.map((r, i) => {
           const idx = i + 1;
@@ -243,12 +240,12 @@ export default function HintLadder({
         onCancel={onCancel}
       />
 
-      <p className="lfoot">Solve it, or exhaust the ladder, and the review layer opens.</p>
+      <p className="lfoot">Solve it, or reveal every hint, and the review layer opens.</p>
 
       {solved && (
         <div className="sheet-actions">
           <button className="sheet-act" onClick={() => setOpen((v) => !v)}>
-            {open ? "HIDE LADDER" : "REVIEW LADDER"}
+            {open ? "HIDE HINTS" : "REVIEW HINTS"}
           </button>
           <Link className="sheet-act primary" href="/">
             MORE PROBLEMS

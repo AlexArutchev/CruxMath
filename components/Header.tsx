@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AccountButton from "./AccountButton";
+import ThemeToggle from "./ThemeToggle";
 
 /**
  * The wordmark is the way home. SOLVE and LIBRARY were separate tabs pointing at
@@ -34,7 +35,10 @@ export default function Header({
         </Link>
       </div>
       {context && <span className="mono hd-ctx">{context}</span>}
-      <AccountButton />
+      <div className="header-actions">
+        <ThemeToggle />
+        <AccountButton />
+      </div>
     </header>
   );
 }

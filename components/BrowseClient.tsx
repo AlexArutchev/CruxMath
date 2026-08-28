@@ -23,8 +23,8 @@ const PAGE_SIZE = 30;
 const TYPES = ["AMC 10", "AMC 12", "AIME"];
 const HINTS = [
   { key: "all", label: "ANY" },
-  { key: "with", label: "WITH LADDER" },
-  { key: "without", label: "NO LADDER" },
+  { key: "with", label: "WITH HINTS" },
+  { key: "without", label: "NO HINTS" },
 ] as const;
 
 const pct = (v: number) => ((v - 1) / 9) * 100;
@@ -593,7 +593,7 @@ export default function BrowseClient({
               href={"/problem/" + p.id}
             >
               <span className="r-c">
-                {p.has_ladder && <span className="r-ladder" title="Hint ladder available" />}
+                {p.has_ladder && <span className="r-ladder" title="Hints available" />}
                 {p.contest.toUpperCase()} · {p.num}
                 {medals.get(p.id) && (
                   <span

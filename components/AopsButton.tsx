@@ -53,7 +53,7 @@ export default function AopsButton({
         FULL SOLUTIONS ON AOPS &rarr;
       </Button>
       <span className="aops-note">
-        No hint ladder for this one yet, so this goes straight to the answer.
+        No hints for this one yet, so this goes straight to the answer.
       </span>
       <ConfirmDialog
         open={pending}

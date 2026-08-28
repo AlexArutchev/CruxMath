@@ -9,6 +9,96 @@
     --line:#E6E1D5; --mut:#8A8375; --mut2:#6B6459; --mut3:#4A443B;
     --dim:#C6BFB0; --green:#2F7A4D;
   }
+  html[data-theme="dark"]{
+    color-scheme:dark;
+    --paper:#292724; --panel:#312E29; --ink:#D8D1C5; --ox:#9C7368;
+    --line:#48443E; --mut:#9D968B; --mut2:#BDB5A9; --mut3:#D0C8BC;
+    --dim:#787168; --green:#7A9A7E;
+    --gold:#D0AA58; --gold-bg:#3B3426; --gold-edge:#6A5738;
+    --silver:#B7B9B9; --silver-bg:#343536; --silver-edge:#5A5C5D;
+    --bronze:#C38A63; --bronze-bg:#3B2E27; --bronze-edge:#6B4B3A;
+    --skeleton:#403C36;
+  }
+  /* Dark mode is a dim reading surface, not an inverted light theme. Most
+     controls predate the theme variables and use light literals, so these
+     deliberate overrides keep selected, hovered, and editable states legible
+     without flashing white blocks through the page. */
+  html[data-theme="dark"] .account-signin,
+  html[data-theme="dark"] .ui-button-secondary,
+  html[data-theme="dark"] .ainput,
+  html[data-theme="dark"] .clerk-social-button,
+  html[data-theme="dark"] .clerk-field-input,
+  html[data-theme="dark"] .tour-back,
+  html[data-theme="dark"] .pg-fbtn,
+  html[data-theme="dark"] .mfchip{
+    background:#39352F!important;border-color:#696259!important;color:var(--mut2)!important;
+  }
+  html[data-theme="dark"] .account-signin:hover,
+  html[data-theme="dark"] .account-signin:focus-visible,
+  html[data-theme="dark"] .ui-button-secondary:hover:not(:disabled),
+  html[data-theme="dark"] .clerk-social-button:hover,
+  html[data-theme="dark"] .tour-back:hover,
+  html[data-theme="dark"] .pg-fbtn:hover,
+  html[data-theme="dark"] .mfchip:hover{
+    background:#443F38!important;border-color:var(--ox)!important;color:var(--ink)!important;
+  }
+  html[data-theme="dark"] .ui-button-primary,
+  html[data-theme="dark"] .segbtn.on,
+  html[data-theme="dark"] .chip.on,
+  html[data-theme="dark"] .mfbtn,
+  html[data-theme="dark"] .sheet-act.primary{
+    background:#4A443B!important;border-color:#665E53!important;color:#E7E0D4!important;
+  }
+  html[data-theme="dark"] .ui-button-primary:hover:not(:disabled),
+  html[data-theme="dark"] .segbtn.on:hover:not(:disabled),
+  html[data-theme="dark"] .segbtn.on:focus:not(:disabled),
+  html[data-theme="dark"] .segbtn.on:active:not(:disabled),
+  html[data-theme="dark"] .chip.on:hover:not(:disabled),
+  html[data-theme="dark"] .chip.on:focus:not(:disabled),
+  html[data-theme="dark"] .chip.on:active:not(:disabled),
+  html[data-theme="dark"] .mfbtn:hover:not(:disabled),
+  html[data-theme="dark"] .mfbtn:focus:not(:disabled),
+  html[data-theme="dark"] .mfbtn:active:not(:disabled),
+  html[data-theme="dark"] .sheet-act.primary:hover,
+  html[data-theme="dark"] .sheet-act.primary:focus,
+  html[data-theme="dark"] .sheet-act.primary:active{
+    background:#575046!important;border-color:var(--ox)!important;color:#F0E9DE!important;
+  }
+  html[data-theme="dark"] .cbox.ui-button-secondary:hover:not(:disabled),
+  html[data-theme="dark"] .cbox.sel,
+  html[data-theme="dark"] .cbox.sel:hover:not(:disabled),
+  html[data-theme="dark"] .cbox.wrong,
+  html[data-theme="dark"] .cbox.wrong:hover:not(:disabled){
+    background:#443F38!important;color:var(--ink)!important;
+  }
+  html[data-theme="dark"] .row:hover,
+  html[data-theme="dark"] .pg-lrow:hover{background:#35322D}
+  html[data-theme="dark"] .confirm{background:#3A302B;border-color:#694D44}
+  html[data-theme="dark"] .solved-pill:not(.gold):not(.silver):not(.bronze){background:#303A30;border-color:#527058}
+  html[data-theme="dark"] .tour-modal,
+  html[data-theme="dark"] .confirm-dialog{border-color:#5B554D}
+  html[data-theme="dark"] .pg-split,
+  html[data-theme="dark"] .pg-cbar{background:#403C36}
+  html[data-theme="dark"] .pg-crow,
+  html[data-theme="dark"] .pg-lrow{--rowline:#48443E}
+  html[data-theme="dark"] .row.medal-gold{background:var(--gold-bg);box-shadow:inset 3px 0 0 var(--gold-edge)}
+  html[data-theme="dark"] .row.medal-silver{background:var(--silver-bg);box-shadow:inset 3px 0 0 var(--silver-edge)}
+  html[data-theme="dark"] .row.medal-bronze{background:var(--bronze-bg);box-shadow:inset 3px 0 0 var(--bronze-edge)}
+  html[data-theme="dark"] .row.medal-gold:hover{background:#443A29}
+  html[data-theme="dark"] .row.medal-silver:hover{background:#3D3E3F}
+  html[data-theme="dark"] .row.medal-bronze:hover{background:#44342C}
+  html[data-theme="dark"] .segbtn.medal-btn.gold.on{background:var(--gold-bg)!important;color:var(--gold)!important;border-color:var(--gold-edge)!important}
+  html[data-theme="dark"] .segbtn.medal-btn.silver.on{background:var(--silver-bg)!important;color:var(--silver)!important;border-color:var(--silver-edge)!important}
+  html[data-theme="dark"] .segbtn.medal-btn.bronze.on{background:var(--bronze-bg)!important;color:var(--bronze)!important;border-color:var(--bronze-edge)!important}
+  html[data-theme="dark"] .segbtn.medal-btn.gold.on:hover:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.gold.on:focus:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.gold.on:active:not(:disabled){background:#443A29!important;color:var(--gold)!important}
+  html[data-theme="dark"] .segbtn.medal-btn.silver.on:hover:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.silver.on:focus:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.silver.on:active:not(:disabled){background:#3D3E3F!important;color:var(--silver)!important}
+  html[data-theme="dark"] .segbtn.medal-btn.bronze.on:hover:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.bronze.on:focus:not(:disabled),
+  html[data-theme="dark"] .segbtn.medal-btn.bronze.on:active:not(:disabled){background:#44342C!important;color:var(--bronze)!important}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif)}
   .mono{font-family:var(--mono)}
@@ -58,7 +148,11 @@
   .wordmark .wm-crux{color:var(--ox)}
   .nav{font-weight:600;font-size:10px;letter-spacing:.14em;color:var(--mut)}
   .nav.on{color:var(--ox);border-bottom:1px solid var(--ox);padding-bottom:2px}
-  .account-actions{margin-left:auto;display:flex;align-items:center}
+  .header-actions{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .account-actions{display:flex;align-items:center}
+  .theme-toggle{display:inline-flex;align-items:center;gap:5px;padding:0;border:none;background:none;color:var(--mut);font-size:9px;font-weight:600;letter-spacing:.1em;cursor:pointer}
+  .theme-toggle:hover,.theme-toggle:focus-visible{color:var(--ox);outline:none}
+  .theme-toggle:focus-visible{outline:2px solid var(--ox);outline-offset:4px}
   .account-signin{border:1px solid var(--line);background:transparent;color:var(--mut);font-size:9px;font-weight:600;letter-spacing:.1em;padding:6px 8px;cursor:pointer}
   .account-signin:hover,.account-signin:focus-visible{border-color:var(--ox);color:var(--ox);outline:none}
   .account-avatar{width:26px;height:26px}

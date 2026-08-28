@@ -223,10 +223,10 @@ export default function Tour() {
         {step === 1 ? (
           <div className="tour-body">
             <h2 className="tour-h" id="tour-title">
-              Some problems have hint ladders.
+              Some problems have hints.
             </h2>
             <p className="tour-p">
-              We have written hint ladders for every AIME from 2020 onwards, and for
+              We have written hints for every AIME from 2020 onwards, and for
               the last five problems of each AMC since 2022. They are marked by this
               dot: <span className="tour-dot" />
             </p>
@@ -262,7 +262,7 @@ export default function Tour() {
             </h2>
             <p className="tour-p">
               Every solve earns a medal for how independently you found it. Gold
-              means you got it first try, with the ladder untouched.
+              means you got it first try, with no hints used.
             </p>
             <div className="tour-medals">
               {MEDALS.map((m, i) => (

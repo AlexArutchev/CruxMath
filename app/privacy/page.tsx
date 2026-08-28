@@ -114,7 +114,7 @@ export default function PrivacyPage() {
             features, Google Signals and ads personalisation are disabled.
           </li>
           <li>
-            <strong>Supabase</strong> provides the database that holds problems, hint ladders,
+            <strong>Supabase</strong> provides the database that holds problems, hints,
             and practice records, whether they are saved anonymously or through an optional
             account.
           </li>

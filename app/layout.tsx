@@ -18,6 +18,7 @@ import { TOUR_NOFLASH } from "@/components/Tour";
  * production. See .env.example.
  */
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const THEME_NOFLASH = `(function(){try{var saved=localStorage.getItem('crux.theme');var theme=saved==='dark'||saved==='light'?saved:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme}catch(_){}})()`;
 
 // Self-hosted at build time, so rendering a page still contacts no third party
 // and costs no render-blocking request. Google does see visitors now, but
@@ -73,8 +74,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={serif.variable + " " + mono.variable}>
+    <html lang="en" suppressHydrationWarning className={serif.variable + " " + mono.variable}>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_NOFLASH }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: ORGANIZATION_SCHEMA }}
