@@ -65,11 +65,16 @@
     background:#575046!important;border-color:var(--ox)!important;color:#F0E9DE!important;
   }
   html[data-theme="dark"] .cbox.ui-button-secondary:hover:not(:disabled),
-  html[data-theme="dark"] .cbox.sel,
-  html[data-theme="dark"] .cbox.sel:hover:not(:disabled),
   html[data-theme="dark"] .cbox.wrong,
   html[data-theme="dark"] .cbox.wrong:hover:not(:disabled){
     background:#443F38!important;color:var(--ink)!important;
+  }
+  /* A selected answer needs a persistent cue after the pointer leaves. The
+     previous rule gave it only the same muted fill as a hovered choice. */
+  html[data-theme="dark"] .cbox.sel,
+  html[data-theme="dark"] .cbox.sel:hover:not(:disabled){
+    background:#4A3B36!important;border-color:var(--ox)!important;
+    color:#F0E9DE!important;box-shadow:0 0 0 3px rgba(156,115,104,.32)!important;
   }
   html[data-theme="dark"] .row:hover,
   html[data-theme="dark"] .pg-lrow:hover{background:#35322D}
