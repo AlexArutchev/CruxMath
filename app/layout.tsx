@@ -18,7 +18,7 @@ import { TOUR_NOFLASH } from "@/components/Tour";
  * production. See .env.example.
  */
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
-const THEME_NOFLASH = `(function(){try{var saved=localStorage.getItem('crux.theme');var theme=saved==='dark'||saved==='light'?saved:(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=theme}catch(_){}})()`;
+const THEME_NOFLASH = `(function(){try{var saved=localStorage.getItem('crux.theme');document.documentElement.dataset.theme=saved==='dark'?'dark':'light'}catch(_){}})()`;
 
 // Self-hosted at build time, so rendering a page still contacts no third party
 // and costs no render-blocking request. Google does see visitors now, but
