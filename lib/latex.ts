@@ -86,7 +86,12 @@ function scan(src: string): Segment[] {
 function renderSegments(segments: Segment[], escapeProse: boolean): string {
   return segments
     .map((seg) => {
-      if (!seg.math) return escapeProse ? escapeHtml(seg.text) : seg.text;
+      // Statements arrive as plain text, but their newlines carry the original
+      // AoPS paragraph and list structure. Preserve those line breaks only in
+      // the escaped-statement path; trusted ladder HTML keeps its own markup.
+      if (!seg.math) {
+        return escapeProse ? escapeHtml(seg.text).replace(/\n/g, "<br />") : seg.text;
+      }
       try {
         return katex.renderToString(seg.tex, {
           displayMode: seg.display,

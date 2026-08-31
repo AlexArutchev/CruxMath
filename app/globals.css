@@ -7,13 +7,13 @@
     
     --paper:#FBFAF7; --panel:#F7F5EF; --ink:#1C1A17; --ox:#8E3B32;
     --line:#E6E1D5; --mut:#8A8375; --mut2:#6B6459; --mut3:#4A443B;
-    --dim:#C6BFB0; --green:#2F7A4D;
+    --dim:#C6BFB0; --green:#2F7A4D; --tour-hover:#EFE4D8;
   }
   html[data-theme="dark"]{
     color-scheme:dark;
     --paper:#292724; --panel:#312E29; --ink:#D8D1C5; --ox:#9C7368;
     --line:#48443E; --mut:#9D968B; --mut2:#BDB5A9; --mut3:#D0C8BC;
-    --dim:#787168; --green:#7A9A7E;
+    --dim:#787168; --green:#7A9A7E; --tour-hover:#443F38;
     --gold:#D0AA58; --gold-bg:#3B3426; --gold-edge:#6A5738;
     --silver:#B7B9B9; --silver-bg:#343536; --silver-edge:#5A5C5D;
     --bronze:#C38A63; --bronze-bg:#3B2E27; --bronze-edge:#6B4B3A;
@@ -463,8 +463,8 @@ a.row{text-decoration:none;color:inherit}
 @keyframes tour-glow-gold{0%,100%{box-shadow:0 0 0 0 rgba(199,154,46,0)}50%{box-shadow:0 0 0 5px rgba(199,154,46,.18)}}
 @keyframes tour-glow-silver{0%,100%{box-shadow:0 0 0 0 rgba(126,133,140,0)}50%{box-shadow:0 0 0 5px rgba(126,133,140,.18)}}
 @keyframes tour-glow-bronze{0%,100%{box-shadow:0 0 0 0 rgba(160,102,58,0)}50%{box-shadow:0 0 0 5px rgba(160,102,58,.18)}}
-@keyframes tour-rowa{0%,18%{background:transparent}23%,32%{background:#EFE4D8}42%,100%{background:transparent}}
-@keyframes tour-rowb{0%,63%{background:transparent}68%,77%{background:#EFE4D8}87%,100%{background:transparent}}
+@keyframes tour-rowa{0%,18%{background:transparent}23%,32%{background:var(--tour-hover)}42%,100%{background:transparent}}
+@keyframes tour-rowb{0%,63%{background:transparent}68%,77%{background:var(--tour-hover)}87%,100%{background:transparent}}
 @keyframes tour-cursor{
   0%{transform:translate(330px,110px) scale(1)}
   18%{transform:translate(150px,22px) scale(1)}
@@ -499,7 +499,7 @@ a.row{text-decoration:none;color:inherit}
      away the travel and keep the picture. Coordinates are the cursor keyframe's
      first resting stop, which measures inside row 1's band. */
   .tour-cursor{transform:translate(150px,23px)}
-  .tour-row.r0{background:#EFE4D8}
+  .tour-row.r0{background:var(--tour-hover)}
 }
 
 /* Reset control */

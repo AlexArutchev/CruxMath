@@ -89,18 +89,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClerkProvider
           appearance={{
             // Keep Clerk's battle-tested flow, but make its modal read like a
-            // CruxMath folio rather than a generic account prompt. Direct
-            // colour values keep Clerk's generated colour states compatible
-            // with browsers that do not support modern CSS colour functions.
+            // CruxMath folio rather than a generic account prompt. Theme
+            // variables keep every Clerk surface, including its footer and
+            // UserButton menu, synchronized with the site's light/dark mode.
             variables: {
-              colorPrimary: "#8E3B32",
-              colorForeground: "#1C1A17",
-              colorMutedForeground: "#6B6459",
-              colorBackground: "#FBFAF7",
-              colorInput: "#FBFAF7",
-              colorInputForeground: "#1C1A17",
-              colorDanger: "#8E3B32",
-              colorSuccess: "#2F7A4D",
+              colorPrimary: "var(--ox)",
+              colorForeground: "var(--ink)",
+              colorMutedForeground: "var(--mut2)",
+              colorBackground: "var(--paper)",
+              colorInput: "var(--panel)",
+              colorInputForeground: "var(--ink)",
+              colorDanger: "var(--ox)",
+              colorSuccess: "var(--green)",
               borderRadius: "2px",
               fontFamily: "var(--font-serif), Georgia, serif",
               fontFamilyButtons: "var(--font-mono), ui-monospace, monospace",
