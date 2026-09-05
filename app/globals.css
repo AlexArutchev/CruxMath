@@ -703,6 +703,12 @@ a.wordmark:hover{color:var(--ox)}
     background:var(--panel);border-left:none;border-top:1px solid var(--line);
     box-shadow:0 -14px 34px rgba(28,26,23,.14);
   }
+  /* Some mobile browsers report a taller layout viewport than the area the
+     student can actually see beneath their browser chrome. Choice answers are
+     a complete interaction, so anchor this sheet to dynamic viewport units. */
+  .stage[data-solved="0"] aside:has(.answer-sheet .choices){
+    top:42dvh;bottom:auto;height:58dvh;max-height:none;
+  }
   .sheet-grab{display:block;flex:none;width:36px;height:4px;border-radius:2px;background:#C9C2B4;margin:8px auto 0}
   .sheet-head{
     display:flex;align-items:baseline;justify-content:space-between;gap:12px;
@@ -734,6 +740,13 @@ a.wordmark:hover{color:var(--ox)}
      a bar. .lbody keeps its own overflow so the cap lands on the text rather
      than clipping the answer row off the bottom. */
   aside[data-sheet="closed"]{max-height:36dvh}
+  /* A closed multiple-choice sheet has to reserve real space for its answer
+     bar. Without a definite sheet height, the hint body can claim the space
+     first and push CHECK beneath the phone viewport. */
+  .stage[data-solved="0"] aside[data-sheet="closed"]:has(.answer-sheet .choices){
+    top:64dvh;height:36dvh;max-height:none;
+  }
+  .stage[data-solved="0"] aside:has(.answer-sheet .choices) .lbody{flex:1 1 0}
   aside[data-sheet="closed"] .rung{display:none}
   aside[data-sheet="closed"] .rung.is-current{display:block}
   aside[data-sheet="closed"] .lockline{display:flex}
@@ -755,18 +768,22 @@ a.wordmark:hover{color:var(--ox)}
   /* Answer bar, pinned to the sheet's bottom edge. 16px on the input is not a
      taste call: anything smaller and iOS zooms the page on focus. */
   .answer.answer-sheet{
-    flex:none;flex-wrap:wrap;align-items:center;gap:10px;margin:0;
+    flex:0 0 auto;flex-wrap:wrap;align-items:center;gap:10px;margin:0;
     padding:12px 20px calc(14px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);background:var(--paper);
   }
   .answer.answer-sheet .lbl{display:none}
   .answer.answer-sheet .ainput{flex:1;width:auto;min-width:0;padding:11px;font-size:16px}
   .answer.answer-sheet .btn{padding:13px 22px}
-  .answer.answer-sheet .choices{flex:1 0 100%;gap:8px}
+  /* Multiple-choice needs to remain a single action row. With five wide
+     choices plus a full-width CHECK, the button fell below the visible phone
+     viewport on shorter devices. Compact the choices just enough to keep the
+     selected answer and its submission control together. */
+  .answer.answer-sheet:has(.choices){flex-wrap:nowrap}
+  .answer.answer-sheet .choices{flex:0 1 236px;max-width:236px;min-width:0;flex-wrap:nowrap;gap:4px}
   .answer.answer-sheet .cbox{flex:1;width:auto;height:44px}
-  /* Five choices and CHECK do not share a 390px line. Without :has the button
-     just wraps at its natural width, which still works. */
-  .answer.answer-sheet:has(.choices) .btn{flex:1 0 100%}
+  .answer.answer-sheet:has(.choices) .cbox{min-width:0;padding:0}
+  .answer.answer-sheet:has(.choices) .btn{flex:none;padding-inline:12px}
   .verdict-row.verdict-sheet{flex:none;margin:0;padding:0 20px 12px;background:var(--paper)}
 
   .sheet-actions{
