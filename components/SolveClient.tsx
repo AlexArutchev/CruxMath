@@ -580,6 +580,8 @@ export default function SolveClient({
         onAsk={setPending}
         onConfirm={(idx) => void confirmRung(idx)}
         onCancel={() => setPending(0)}
+        onNextProblem={openNextProblem}
+        nextState={nextState}
       >
         {answerBlock("sheet")}
       </HintLadder>

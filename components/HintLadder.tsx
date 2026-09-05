@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { latexInHtml, latexToHtml } from "@/lib/latex";
 import type { Rung } from "@/lib/types";
 import Button from "./ui/Button";
@@ -62,6 +61,8 @@ export default function HintLadder({
   onAsk,
   onConfirm,
   onCancel,
+  onNextProblem,
+  nextState = "idle",
   children,
 }: {
   rungs: (Rung | null)[];
@@ -71,6 +72,9 @@ export default function HintLadder({
   onAsk: (idx: number) => void;
   onConfirm: (idx: number) => void;
   onCancel: () => void;
+  /** The solved-sheet continuation action. Shown only on mobile. */
+  onNextProblem?: () => void;
+  nextState?: "idle" | "loading" | "none";
   /** The answer row, pinned to the bottom of the sheet on mobile. */
   children?: React.ReactNode;
 }) {
@@ -244,12 +248,17 @@ export default function HintLadder({
 
       {solved && (
         <div className="sheet-actions">
-          <button className="sheet-act" onClick={() => setOpen((v) => !v)}>
-            {open ? "HIDE HINTS" : "REVIEW HINTS"}
-          </button>
-          <Link className="sheet-act primary" href="/">
-            MORE PROBLEMS
-          </Link>
+          <Button
+            variant="accent"
+            className="sheet-next"
+            onClick={onNextProblem}
+            disabled={!onNextProblem || nextState !== "idle"}
+          >
+            {nextState === "loading" ? "FINDING NEXT PROBLEM…" : "NEXT PROBLEM"}
+          </Button>
+          {nextState === "none" && (
+            <span className="sheet-next-note">NO LATER PROBLEM MATCHES YOUR CURRENT FILTERS.</span>
+          )}
         </div>
       )}
 
