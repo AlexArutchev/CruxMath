@@ -45,8 +45,7 @@
   html[data-theme="dark"] .ui-button-primary,
   html[data-theme="dark"] .segbtn.on,
   html[data-theme="dark"] .chip.on,
-  html[data-theme="dark"] .mfbtn,
-  html[data-theme="dark"] .sheet-act.primary{
+  html[data-theme="dark"] .mfbtn{
     background:#4A443B!important;border-color:#665E53!important;color:#E7E0D4!important;
   }
   html[data-theme="dark"] .ui-button-primary:hover:not(:disabled),
@@ -58,10 +57,7 @@
   html[data-theme="dark"] .chip.on:active:not(:disabled),
   html[data-theme="dark"] .mfbtn:hover:not(:disabled),
   html[data-theme="dark"] .mfbtn:focus:not(:disabled),
-  html[data-theme="dark"] .mfbtn:active:not(:disabled),
-  html[data-theme="dark"] .sheet-act.primary:hover,
-  html[data-theme="dark"] .sheet-act.primary:focus,
-  html[data-theme="dark"] .sheet-act.primary:active{
+  html[data-theme="dark"] .mfbtn:active:not(:disabled){
     background:#575046!important;border-color:var(--ox)!important;color:#F0E9DE!important;
   }
   html[data-theme="dark"] .cbox.ui-button-secondary:hover:not(:disabled),
@@ -309,8 +305,7 @@
    selected control read like an alarm instead of a stable choice. */
 .segbtn.on:hover:not(:disabled),.segbtn.on:focus:not(:disabled),.segbtn.on:active:not(:disabled),
 .chip.on:hover:not(:disabled),.chip.on:focus:not(:disabled),.chip.on:active:not(:disabled),
-.mfbtn:hover:not(:disabled),.mfbtn:focus:not(:disabled),.mfbtn:active:not(:disabled),
-.sheet-act.primary:hover,.sheet-act.primary:focus,.sheet-act.primary:active{
+.mfbtn:hover:not(:disabled),.mfbtn:focus:not(:disabled),.mfbtn:active:not(:disabled){
   color:var(--paper);
 }
 .cyear{width:100%;box-sizing:border-box;font:400 13.5px var(--serif);padding:8px 2px;border:none;border-bottom:1px solid #C9C2B4;background:transparent;outline:none;color:var(--ink)}
@@ -775,16 +770,17 @@ a.wordmark:hover{color:var(--ox)}
   .verdict-row.verdict-sheet{flex:none;margin:0;padding:0 20px 12px;background:var(--paper)}
 
   .sheet-actions{
-    display:flex;flex:none;gap:10px;
+    display:flex;flex:none;flex-direction:column;gap:8px;
     padding:10px 20px calc(14px + env(safe-area-inset-bottom));
     border-top:1px solid var(--line);
   }
-  .sheet-act{
-    flex:1;padding:13px 0;text-align:center;border:1px solid #C9C2B4;border-radius:2px;
-    background:none;color:var(--mut2);text-decoration:none;cursor:pointer;
-    font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:.1em;
-  }
-  .sheet-act.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .sheet-next{width:100%;min-height:44px}
+  .sheet-next-note{font-style:italic;font-size:10px;line-height:1.4;color:var(--mut);text-align:center}
+
+  /* The solved sheet owns the phone continuation action. Keeping the desktop
+     placement as well made two equally prominent next-step buttons compete
+     after every solve. */
+  .next-problem{display:none}
 
   /* ---- library ---- */
   .wrap{display:block;min-height:0}
