@@ -9,7 +9,12 @@ import type { Problem, Ladder } from "@/lib/types";
 // Browse reads the live public corpus. Problem pages must do the same: caching
 // a missing row made newly seeded problems keep returning a 404 until the cache
 // expired, leaving valid library links broken.
-export const revalidate = 0;
+// The public problem payload contains no answer or hint bodies, so it can be
+// cached safely. This turns a Googlebot visit into a cacheable document rather
+// than a fresh Supabase render, while new corpus edits are visible within an
+// hour.
+export const revalidate = 3600;
+export const dynamic = "force-static";
 
 function plainStatement(statement: string): string {
   return statement

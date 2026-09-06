@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { hasSupabaseEnv, supabaseServer } from "@/lib/supabase/server";
+import { ARCHIVE_PAGE_SIZE, SEO_TOPICS, topicSlug } from "@/lib/seo-archive";
 
 const SITE_URL = "https://www.cruxmath.com";
 
@@ -9,6 +10,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${SITE_URL}/archive`, changeFrequency: "weekly", priority: 0.8 },
+    ...SEO_TOPICS.map((topic) => ({
+      url: `${SITE_URL}/topics/${topicSlug(topic)}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
   ];
 
   if (!hasSupabaseEnv()) return staticPages;
@@ -30,8 +37,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     problems.push(...batch);
     if (batch.length < pageSize) break;
   }
+  const archivePages: MetadataRoute.Sitemap = Array.from(
+    { length: Math.max(0, Math.ceil(problems.length / ARCHIVE_PAGE_SIZE) - 1) },
+    (_, index) => ({
+      url: `${SITE_URL}/archive?page=${index + 2}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    })
+  );
   return [
     ...staticPages,
+    ...archivePages,
     ...problems.map((problem) => ({
       url: `${SITE_URL}/problem/${problem.id}`,
       lastModified: problem.updated_at,
