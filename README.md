@@ -58,8 +58,6 @@ Fill in from **Project Settings -> API**:
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL | public |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon public key | public, safe in the browser |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk API Keys | public, enables optional sign-in |
-| `CLERK_SECRET_KEY` | Clerk API Keys | **server only, never commit** |
-| `SUPABASE_SERVICE_ROLE_KEY` | service_role key | **server only, never commit** |
 | `CRUX_CONTENT_DIR` | local path | folder holding `data.js` + `ladders.js` |
 
 ### 3. Content
